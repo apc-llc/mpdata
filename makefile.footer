@@ -1,0 +1,107 @@
+###################################################################################################
+#
+# 	STATIC LIBRARY
+#
+###################################################################################################
+
+define BUILD_STATIC_LIBRARY
+$(1)_OBJECTS := $$($(shell echo $(1) | tr '[a-z]' '[A-Z]' | tr '/' '_')_SOURCES)
+$(1)_OBJECTS := $$(addsuffix .o, $$($(1)_OBJECTS))
+$(1)_OBJECTS := $$(addprefix $(STORE)/, $$($(1)_OBJECTS))
+$(1)_OUTDIR := $(OUTDIR)/$(dir $(1))
+$(1).a: DEFINES += $($(shell echo $(1) | tr '[a-z]' '[A-Z]' | tr '/' '_')_DEFINES)
+$(1).a: INCLUDES += $($(shell echo $(1) | tr '[a-z]' '[A-Z]' | tr '/' '_')_INCLUDES)
+$(1).a: dirs $$($(1)_SCRIPTS) $$($(1)_OBJECTS)
+	@echo Packing static library lib$(notdir $(1)) ...
+	@$(AR) $(ARPARAMS) $$($(1)_OUTDIR)lib$(notdir $(1)).a $$($(1)_OBJECTS)
+endef
+
+###################################################################################################
+#
+# 	SHARED LIBRARY
+#
+###################################################################################################
+		
+define BUILD_SHARED_LIBRARY
+$(1)_EMBED := $$($(shell echo $(1) | tr '[a-z]' '[A-Z]' | tr '/' '_')_EMBED)
+$(1)_DEPLIBS := $$($(shell echo $(1) | tr '[a-z]' '[A-Z]' | tr '/' '_')_DEPLIBS)
+$(1).so: PARGS += -link $(CCOMP) $(CPARAMS) $(DEFINES) $(INCLUDES)
+$(1).so: dirs
+	@echo Linking shared library $(1) ...
+	@$(CCOMP) $(CPARAMS) -Wl,--no-undefined -shared \
+		-o $(OUTDIR)/lib$(1).so -L$(OUTDIR) \
+		-Wl,--gc-sections -Wl,--whole-archive -Wl,-static $$($(1)_EMBED) \
+		-Wl,--no-whole-archive -Wl,-call_shared $$($(1)_DEPLIBS)
+endef
+
+###################################################################################################
+#
+# 	TEST EXECUTABLE
+#
+###################################################################################################
+
+define BUILD_TEST_EXECUTABLE
+$(2)_OBJECTS := $$(wildcard $(1)/$(2)/*.c)
+$(2)_OBJECTS := $$(addsuffix .o, $$($(2)_OBJECTS))
+$(2)_OBJECTS := $$(addprefix $(STORE)/, $$($(2)_OBJECTS))
+$(2): INCLUDES += $(TEST_INCLUDES)
+$(2): dirs $(GENERATORS) $$($(2)_OBJECTS)
+	@echo Linking test executable $(2) ...
+	@$(CPPCOMP) $(CPARAMS) -o $(OUTDIR)/$(1)/$(2) $$($(2)_OBJECTS) \
+		-L$(OUTDIR) -l$(NAME) -L$(OUTDIR)/$(TESTSROOT)/ \
+		$($(2)_DEPLIBS) $(TEST_DEPLIBS)
+endef
+
+###################################################################################################
+#
+# 	BUILD ROOT
+#
+###################################################################################################
+
+$(foreach LIBRARY,$(STATIC),$(eval $(call BUILD_STATIC_LIBRARY,$(basename $(LIBRARY)))))
+$(foreach LIBRARY,$(SHARED),$(eval $(call BUILD_SHARED_LIBRARY,$(basename $(LIBRARY)))))
+$(foreach TEST,$(TESTS), $(eval $(call BUILD_TEST_EXECUTABLE,$(TESTSROOT),$(TEST))))
+$(foreach APP,$(APPS), $(eval $(call BUILD_APP_EXECUTABLE,$(APP))))
+
+$(STATIC): dirs
+$(SHARED): $(STATIC)
+$(TESTS): $(SHARED)
+$(APPS): $(SHARED)
+
+$(STORE)/%.c.o: %.c
+	@echo Creating object file for $< ...
+	@$(CCOMP) $(CPARAMS) $(DEFINES) $(INCLUDES) -c $< -o $@
+$(STORE)/%.cpp.o: %.cpp
+	@echo Creating object file for $< ...
+	@$(CPPCOMP) $(CPPPARAMS) $(DEFINES) $(INCLUDES) -c $< -o $@
+$(STORE)/%.cu.o: %.cu
+	@echo Creating object file for $< ...
+	@$(NVCCOMP) $(NVCCPARAMS) $(DEFINES) $(INCLUDES) -c $< -o $@
+$(STORE)/%.f90.o: %.f90
+	@echo Creating object file for $< ...
+	@$(FCOMP) $(FPARAMS) $(DEFINES) $(INCLUDES) -c $< -o $@
+$(STORE)/%.f.o: %.f
+	@echo Creating object file for $< ...
+	@$(FCOMP) $(FPARAMS) $(DEFINES) $(INCLUDES) -c $< -o $@
+
+dirs:
+	@-mkdir -p $(OUTDIR)
+	@-mkdir -p $(OUTDIR)/$(TESTSROOT)
+	@-$(foreach DIR, $(DIRS), $(shell mkdir -p $(STORE)/$(DIR)))
+	@-$(foreach DIR, $(TESTS), \
+		mkdir -p $(STORE)/$(TESTSROOT)/$(shell echo $(DIR) | tr '[A-Z]' '[a-z]'); )
+	@-$(foreach DIR, $(shell find $(DIRS) -type d), if [ ! -e $(STORE)/$(DIR) ]; \
+		then mkdir -p $(STORE)/$(DIR); fi; )
+
+snap:
+	tar -cvzf ../$(NAME)_`date +%y%m%d%H%M%S`.tar.gz ../$(NAME)
+
+clean:
+	@echo Making clean.
+	@-rm -rf $(OUTDIR)
+	@-rm -rf $(STORE)
+	@-rm -rf $(DOCS)
+	@-rm -rf *.bin *.ctl *.pl *.gs *.vdf *_frames *_data
+
+.PHONY: all clean snap dirs tests
+

@@ -1,0 +1,36 @@
+ifeq ($(TOOLCHAIN), gnu)
+GNUOPT = -ffast-math
+
+CCOMP = gcc
+CPARAMS = -g -O$(OPTLEVEL) -std=c99 -fPIC $(GNUOPT)
+
+CPPCOMP = g++
+CPPPARAMS = -g -O$(OPTLEVEL) -fPIC $(GNUOPT)
+
+FCOMP = gfortran
+FPARAMS = -g -O$(OPTLEVEL) -fno-underscoring $(GNUOPT)
+endif
+
+ifeq ($(TOOLCHAIN), intel)
+INTELOPT = -xSSE2 -fno-alias -fno-fnalias -fno-exceptions -inline-level=2
+
+CCOMP = icc
+CPARAMS = -g -O$(OPTLEVEL) -std=c99 -fPIC $(INTELOPT)
+
+CPPCOMP = icpc
+CPPPARAMS = -g -O$(OPTLEVEL) -fPIC $(INTELOPT)
+
+FCOMP = ifort
+FPARAMS = -g -O$(OPTLEVEL) -assume nounderscore $(INTELOPT)
+endif
+
+DOXYGEN = doxygen
+
+PERL = perl
+
+AR = ar
+ARPARAMS = -r
+
+INCLUDES := -I.
+DEFINES :=
+

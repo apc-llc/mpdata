@@ -1,0 +1,11 @@
+# Set optimization level
+OPT_LEVEL = 0
+
+# Set 1 to have CUDA support
+HAVE_CUDA = 0
+
+# CUDA toolkit root (path for libs will be appended)
+CUDAROOT = /opt/cuda/
+
+# Data type used in tests
+TYPE = INTEGER
