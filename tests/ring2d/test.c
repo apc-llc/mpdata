@@ -51,9 +51,13 @@ int main(int argc, char* argv[])
 		fwrite(t->u + n2, 1, n2b, fp);
 		fwrite(t->v + n2, 1, n2b, fp);
 		fwrite(t->c1 + n2, 1, n2b, fp);
-		
+
+#if defined(SINGLE) || defined(DOUBLE)		
 		printf("step %d %f\n", it,
 			t->c1[n / 2 + t->xof + n * (n / 2 + t->yof) + n2]);
+#else
+		printf("step %d\n", it);
+#endif
 
 		real* c = t->c0;
 		t->c0 = t->c1; t->c1 = c;

@@ -7,7 +7,8 @@ ARCH = i686
 # Optimization level value (0, 1, 2 ... whatever supported)
 OPTLEVEL = 0
 
-# Set 1 to enable one of floating-point precision modes
+# Set 1 to enable one of data type modes
 HAVE_SINGLE = 1
 HAVE_DOUBLE = 0
+HAVE_INTEGER = 0
 

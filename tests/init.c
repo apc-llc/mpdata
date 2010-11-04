@@ -72,7 +72,7 @@ struct test_config_t* test_init(int n, int m, int* size /** OUT **/)
 		rmin, rmax, t->u, t->v, 1.0, 0);
 	
 	// Clone ring flow on all vertical levels.	
-	for (int i = 0; i < m; i++)
+	for (int i = 1; i < m; i++)
 	{
 		memcpy(t->u + i * n2, t->u, n2b);
 		memcpy(t->v + i * n2, t->v, n2b);
@@ -93,6 +93,8 @@ struct test_config_t* test_init(int n, int m, int* size /** OUT **/)
 	{
 		gengauss2d(n / 2 + xof, n / 2 + yof, n, n,
 			radius, sigma, sigma, t->c0, 1.0);
+		for (int i = 1; i < m; i++)
+			memcpy(t->c0 + i * n2, t->c0, n2b);
 	}
 		
 	return t;
@@ -146,6 +148,7 @@ void test_create_grads_gs(int n, int nt, const char* name)
 	sprintf(filename, "%s.gs", name);
 	FILE* fp = fopen(filename, "w");
 
+	fprintf(fp, "'open '\"%s.ctl\"\n", name);
 	for (int it = 0; it < nt; it++)
 	{
 		fprintf(fp, "'set parea '0.5' '10.5' '1.5' '7.5\n");
@@ -156,7 +159,6 @@ void test_create_grads_gs(int n, int nt, const char* name)
 		fprintf(fp, "'set mpdraw 'off\n");
 		fprintf(fp, "'set gxout 'shaded\n");
 		
-		fprintf(fp, "'open '\"%s.ctl\"\n", name);
 		fprintf(fp, "'set clevs '%f' '%f' '%f' '%f' '%f'",
 			0.0, 0.1, 0.2, 0.3, 0.4);
 		fprintf(fp, "'%f' '%f' '%f' '%f' '%f' '%f\n",

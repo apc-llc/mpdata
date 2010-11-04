@@ -115,16 +115,24 @@ int main(int argc, char* argv[])
 		fwrite(t2->u + n2, 1, n2b, fp);
 		fwrite(t2->v + n2, 1, n2b, fp);
 		fwrite(t2->c1 + n2, 1, n2b, fp);
-		
+
+#if defined(SINGLE) || defined(DOUBLE)				
 		printf("step %d %f %f %f\n", it, cmin, cmax,
 			c[n / 2 + t1->xof + n * (n / 2 + t1->yof)]);
+#else
+		printf("step %d\n", it);
+#endif
 #else
 		fwrite(t1->u + n2, 1, n2b, fp);
 		fwrite(t1->v + n2, 1, n2b, fp);
 		fwrite(t1->c1 + n2, 1, n2b, fp);
-		
+
+#if defined(SINGLE) || defined(DOUBLE)		
 		printf("step %d %f\n", it,
 			t1->c1[n / 2 + t1->xof + n * (n / 2 + t1->yof) + n2]);
+#else
+		printf("step %d\n", it);
+#endif
 #endif
 
 		// Swap serial smolar concentrations.
