@@ -114,6 +114,8 @@ struct test_config_t* test_clone(int size, struct test_config_t* t)
 	r->dx = t->dx; r->dy = t->dy; r->ds = t->ds;
 	r->order = t->order; r->flow_type = t->flow_type;
 	r->xof = t->xof; r->yof = t->yof;
+	
+	return r;
 }
 
 // Create GrADS visualization ctl file.

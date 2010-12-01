@@ -1,5 +1,5 @@
 # Toolchain selector (gnu or intel)
-TOOLCHAIN = gnu
+TOOLCHAIN = intel
 
 # Target architecture (i686 or x86_64)
 ARCH = i686
