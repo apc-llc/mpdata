@@ -166,7 +166,7 @@ void setgrid(struct domain_t** pdomains,
 	// Set domains overheads using fictive empty domain.
 	overhead(domains, empty, 0,
 		sx, sy, ss, incx, incy, incs,
-		bx, ex, by, ey, bs, es);
+		nbx, nex, nby, ney, nbs, nes);
 	
 	// Get space for subdomains from the previously
 	// allocated memory.

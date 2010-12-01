@@ -1,6 +1,6 @@
 #pragma once
 
-// Set domains overheads.
+// Set normilized domains overheads (0 or 1).
 void overhead(
 	struct domain_t* domains, struct domain_t* empty, int igrid,
 	int sx, int sy, int ss, int incx, int incy, int incs,

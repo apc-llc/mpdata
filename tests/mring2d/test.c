@@ -24,9 +24,9 @@ const char* name = "mring2d";
 int main(int argc, char* argv[])
 {
 	char usage[40];
-	sprintf(usage, "%s <n> <nt> <sx> <sy> <ss> <mode>", name);
+	sprintf(usage, "%s <n> <nt> <sx> <sy> <mode>", name);
 
-	if (argc != 7)
+	if (argc != 6)
 	{
 		printf("%s\n", usage);
 		return 0;
@@ -34,9 +34,9 @@ int main(int argc, char* argv[])
 
 	int mode = -1;
 	
-	if (!strcmp(argv[6], "serial")) 	mode = MSMOLAR_SERIAL;
-	if (!strcmp(argv[6], "pthreads")) 	mode = MSMOLAR_PTHREADS;
-	if (!strcmp(argv[6], "openmp"))		mode = MSMOLAR_OPENMP;
+	if (!strcmp(argv[5], "serial")) 	mode = MSMOLAR_SERIAL;
+	if (!strcmp(argv[5], "pthreads")) 	mode = MSMOLAR_PTHREADS;
+	if (!strcmp(argv[5], "openmp"))		mode = MSMOLAR_OPENMP;
 	
 	if (mode == -1)
 	{
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 	int n = atoi(argv[1]), n2 = n * n, n2b = n2 * sizeof(real);
 	int nt = atoi(argv[2]), size;
 	
-	int sx = atoi(argv[3]), sy = atoi(argv[4]), ss = atoi(argv[5]);
+	int sx = atoi(argv[3]), sy = atoi(argv[4]), ss = 1;
 
 	// Create test configuration.
 	struct test_config_t* t1 = test_init(n, 3, &size);

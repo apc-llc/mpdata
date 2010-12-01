@@ -43,7 +43,7 @@
 	SET_OVERLAPS(bx, ex, by, ey, bs, es); \
 	SET_LINKS(bx, ex, by, ey, bs, es);
 
-// Set domains overheads.
+// Set normilized domains overheads (0 or 1).
 void overhead(
 	struct domain_t* domains, struct domain_t* empty, int igrid,
 	int sx, int sy, int ss, int incx, int incy, int incs,
@@ -53,10 +53,6 @@ void overhead(
 	{
 		int iv = 0;
 		
-		// Use normalized overheads.
-		int bx = 1, by = 1, bs = 1;
-		int ex = 1, ey = 1, es = 1;
-
 		SET_DOMAIN(0, ex, 0, ey, 0, es);
 		iv += incx;
 
