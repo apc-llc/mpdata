@@ -11,10 +11,10 @@
 #ifndef	_VaporFlow_h_
 #define	_VaporFlow_h_
 
-#include "vapor/DataMgr.h"
-#include "vapor/MyBase.h"
-#include "vaporinternal/common.h"
-#include "vapor/flowlinedata.h"
+#include <vapor/DataMgr.h>
+#include <vapor/MyBase.h>
+#include <vapor/common.h>
+#include <vapor/flowlinedata.h>
 
 
 
@@ -39,7 +39,7 @@ namespace VAPoR
 		void SetSteadyFieldComponents(const char* xvar, const char* yvar, const char* zvar);
 		void SetUnsteadyFieldComponents(const char* xvar, const char* yvar, const char* zvar);
 
-		void SetRegion(size_t num_xforms, const size_t min[3], const size_t max[3], const size_t min_bdim[3], const size_t max_bdim[3], size_t fullGridHeight);
+		void SetRegion(size_t num_xforms, int clevel, const size_t min[3], const size_t max[3], const size_t min_bdim[3], const size_t max_bdim[3], size_t fullGridHeight);
 		void SetRakeRegion(const size_t min[3], const size_t max[3], const size_t min_bdim[3], const size_t max_bdim[3]);
 		void SetUnsteadyTimeSteps(int timeStepList[], size_t numSteps);
 		void SetSteadyTimeSteps(size_t timeStep, int direction){
@@ -50,12 +50,9 @@ namespace VAPoR
 		void ScaleSteadyTimeStepSizes(double userTimeStepMultiplier, double animationTimeStepMultiplier);
 		void ScaleUnsteadyTimeStepSizes(double userTimeStepMultiplier, double animationTimeStepMultiplier);
 		
-		
-		//Following is obsolete, replaced by SetDistributedSeedPoints:
-		//void SetRandomSeedPoints(const float min[3], const float max[3], int numSeeds);
-		void SetRegularSeedPoints(const float min[3], const float max[3], const size_t numSeeds[3]);
+		void SetRegularSeedPoints(const double min[3], const double max[3], const size_t numSeeds[3]);
 		void SetIntegrationParams(float initStepSize, float maxStepSize);
-		void SetDistributedSeedPoints(const float min[3], const float max[3], int numSeeds, 
+		void SetDistributedSeedPoints(const double min[3], const double max[3], int numSeeds, 
 			const char* xvar, const char* yvar, const char* zvar, float bias);
 		
 		//New version for API.  Uses rake, then puts integration results in container
@@ -154,6 +151,7 @@ namespace VAPoR
 		char *xSeedDistVarName, *ySeedDistVarName, *zSeedDistVarName;
 													// field variables used to determine random seed distribution
 		size_t numXForms, minBlkRegion[3], maxBlkRegion[3];// in block coordinate
+		int compressLevel;
 		size_t minRegion[3], maxRegion[3];			//Actual region bounds
 		float flowPeriod[3];						//Used if data is periodic
 		float* flowLineAdvectionSeeds;

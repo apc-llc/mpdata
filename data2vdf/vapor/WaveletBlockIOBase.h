@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlockIOBase.h,v 1.1 2008/06/17 14:42:56 clynejp Exp $
+//      $Id: WaveletBlockIOBase.h,v 1.3 2010/06/07 16:34:48 clynejp Exp $
 //
 
 
@@ -10,6 +10,7 @@
 #include <netcdf.h>
 #include <vapor/MyBase.h>
 #include <vapor/WaveletBlock3D.h>
+#include <vapor/WaveletBlock2D.h>
 #include <vapor/VDFIOBase.h>
 
 namespace VAPoR {
@@ -19,13 +20,13 @@ namespace VAPoR {
 //! \class WaveletBlockIOBase
 //! \brief Performs data IO to VDF files.
 //! \author John Clyne
-//! \version $Revision: 1.1 $
-//! \date    $Date: 2008/06/17 14:42:56 $
+//! \version $Revision: 1.3 $
+//! \date    $Date: 2010/06/07 16:34:48 $
 //!
 //! This class provides an API for performing low-level IO 
 //! to/from VDF files
 //
-class VDF_API	WaveletBlockIOBase : public VAPoR::VDFIOBase {
+class VDF_API	WaveletBlockIOBase : public VDFIOBase {
 
 public:
 
@@ -37,11 +38,10 @@ public:
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, WaveletBlock3DRegionReader, GetErrCode(),
+ //! \sa MetadataVDC, WaveletBlock3DRegionReader, GetErrCode(),
  //
  WaveletBlockIOBase(
-	const Metadata *metadata,
-	unsigned int	nthreads = 1
+	const MetadataVDC &metadata
  );
 
  //! Constructor for the WaveletBlockIOBase class.
@@ -52,11 +52,10 @@ public:
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, WaveletBlock3DRegionReader, GetErrCode(),
+ //! \sa MetadataVDC, WaveletBlock3DRegionReader, GetErrCode(),
  //
  WaveletBlockIOBase(
-	const char *metafile,
-	unsigned int	nthreads = 1
+	const string &metafile
  );
 
  virtual ~WaveletBlockIOBase();
@@ -76,7 +75,8 @@ public:
  virtual int    VariableExists(
 	size_t ts,
 	const char *varname,
-	int reflevel = 0
+	int reflevel = 0,
+	int lod = 0
  ) const ;
 
 
@@ -116,7 +116,7 @@ public:
  //! parameter, \p reflevel indicates the resolution of the volume in
  //! the multiresolution hierarchy. The valid range of values for
  //! \p reflevel is [0..max_refinement], where \p max_refinement is the
- //! maximum finement level of the data set: Metadata::GetNumTransforms() - 1.
+ //! maximum finement level of the data set: Metadata::GetNumTransforms().
  //! volume when the volume was created. A value of zero indicates the
  //! coarsest resolution data, a value of \p max_refinement indicates the
  //! finest resolution data.
@@ -135,7 +135,8 @@ public:
  virtual int	OpenVariableRead(
 	size_t timestep,
 	const char *varname,
-	int reflevel = 0
+	int reflevel = 0,
+	int lod = 0
  );
 
  //! Close the currently opened variable.
@@ -166,13 +167,52 @@ public:
  //!
  int	GetBlockMaxs(const float **maxs, int reflevel);
 
- //! Return the transform timer
+ //! Unpack a tile into a contiguous volume
  //!
- //! This method returns the accumulated clock time, in seconds,
- //! spent peforming wavelet transforms. There is presently no
- //! way to reset the counter (without creating a new class object)
+ //! Untile the tile \p blk into a volume pointed to by \p voxels
+ //! \param[in] blk A tile of voxels
+ //! \param[in] bcoord Offset of the start of the tile within the
+ //! volume in integer coordinates
+ //! \param[in] min Minimum extents of destination volume in voxel
+ //! coordinates. Must be between 0 and block_size-1
+ //! \param[in] max Maximum extents of destination volume in voxel 
+ //! coordinates. 
+ //! \param[out] voxels A pointer to a volume
+ //
+ void    Tile2NonTile(
+    const float *blk,
+    const size_t bcoord[2],
+    const size_t min[2],
+    const size_t max[2],
+    VarType_T vtype,
+    float   *voxels
+ ) const;
+
+ //! Unpack a block into a contiguous volume
  //!
- double	GetXFormTimer() const { return(_xform_timer); };
+ //! Unblock the block \p blk into a volume pointed to by \p voxels
+ //! \param[in] blk A block of voxels
+ //! \param[in] bcoord Offset of the start of the block within the
+ //! volume in integer coordinates
+ //! \param[in] min Minimum extents of destination volume in voxel
+ //! coordinates. Must be between 0 and block_size-1
+ //! \param[in] max Maximum extents of destination volume in voxel 
+ //! coordinates. 
+ //! \param[out] voxels A pointer to a volume
+ //
+ void    Block2NonBlock(
+	const float *blk,
+	const size_t bcoord[3],
+	const size_t min[3],
+	const size_t max[3],
+	float   *voxels
+ ) const;
+
+ const float *GetDataRange() const {return (_dataRange);}
+
+ void    GetValidRegion(
+	size_t min[3], size_t max[3], int reflevel
+ ) const;
 
 
 protected:
@@ -181,26 +221,23 @@ protected:
 
  int	_reflevel;	// refinement level of currently opened file.
 						
- double	_xform_timer;	// records transform time by derived classes
-
  size_t _timeStep;		// Currently opened timestep
  string _varName;		// Currently opened variable
+ float  *_super_block;     // temp storage for gamma blocks;
+ float *_super_tile;
+ VarType_T _vtype;  // Type of currently opened variable
 
- float	*_mins[MAX_LEVELS];	// min value contained in a block
- float	*_maxs[MAX_LEVELS];	// max value contained in a block
+ WaveletBlock2D *_wb2dXY;
+ WaveletBlock2D *_wb2dXZ;
+ WaveletBlock2D *_wb2dYZ;
+ WaveletBlock3D  *_wb3d;
 
- virtual int	ncDefineDimsVars(
-	int j,
-	const string &path,
-	const int bs_dim_ids[3], 
-	const int dim_ids[3]
+ float	*_mins3d[MAX_LEVELS];	// min value contained in a block
+ float	*_maxs3d[MAX_LEVELS];	// max value contained in a block
 
- ) = 0;
+ float	*_mins2d[MAX_LEVELS];	// min value contained in a block
+ float	*_maxs2d[MAX_LEVELS];	// max value contained in a block
 
- virtual int	ncVerifyDimsVars(
-	int j,
-	const string &path
- ) = 0;
 
  // This method moves the file pointer associated with the currently
  // open variable to the disk block indicated by 'offset' and
@@ -218,7 +255,7 @@ protected:
  //
  // A non-negative return value indicates success
  //
- virtual int	seekLambdaBlocks(const size_t bcoord[3]) = 0;
+ int	seekLambdaBlocks(const size_t bcoord[3]);
 
  // This method moves the file pointer associated with the currently
  // open variable to the disk block containing gamma coefficients
@@ -229,7 +266,7 @@ protected:
  //
  // A non-negative return value indicates success
  //
- virtual int	seekGammaBlocks(const size_t bcoord[3], int reflevel) = 0;
+ int	seekGammaBlocks(const size_t bcoord[3], int reflevel);
 
  // Read 'n' contiguous coefficient blocks, associated with the refinement
  // level, 'reflevel', from the currently open variable
@@ -238,7 +275,7 @@ protected:
  // finest resolution. The results are stored in 'blks', which must 
  // point to an area of adequately sized memory.
  //
- virtual int	readBlocks(size_t n, float *blks, int reflevel) = 0;
+ int	readBlocks(size_t n, float *blks, int reflevel);
 
  //
  // Read 'n' contiguous lambda coefficient blocks
@@ -246,7 +283,7 @@ protected:
  // The results are stored in 'blks', which must 
  // point to an area of adequately sized memory.
  //
- virtual int	readLambdaBlocks(size_t n, float *blks) = 0;
+ int	readLambdaBlocks(size_t n, float *blks);
 
  //
  // Read 'n' contiguous gamma coefficient blocks, associated with
@@ -257,7 +294,7 @@ protected:
  // An error is generated if 'reflevel' is less than one or
  // 'reflevel' is greater than _max_reflevel.
  //
- virtual int	readGammaBlocks(size_t n, float *blks, int reflevel) = 0;
+ int	readGammaBlocks(size_t n, float *blks, int reflevel);
 
  // Write 'n' contiguous coefficient blocks, associated with the indicated
  // number of transforms, 'num_xforms', from the currently open variable
@@ -266,14 +303,14 @@ protected:
  // finest resolution. The coefficients are copied from the memory area
  // pointed to by 'blks'
  //
- virtual int	writeBlocks(const float *blks, size_t n, int reflevel) = 0;
+ int	writeBlocks(const float *blks, size_t n, int reflevel);
 
  // Write 'n' contiguous lambda coefficient blocks
  // from the currently open variable file. 
  // The blocks are copied to disk from the memory area pointed to 
  // by  'blks'.
  //
- virtual int	writeLambdaBlocks(const float *blks, size_t n) = 0;
+ int	writeLambdaBlocks(const float *blks, size_t n);
 
  // Write 'n' contiguous gamma coefficient blocks, associated with
  // the indicated refinement level, 'ref_level',
@@ -282,21 +319,35 @@ protected:
  // An error is generated if ref_level is less than one or
  // 'ref_level' is greater than _max_reflevel.
  //
- virtual int	writeGammaBlocks(const float *blks, size_t n, int reflevel) = 0;
+ int	writeGammaBlocks(const float *blks, size_t n, int reflevel);
 
 
-protected:
+
+ virtual void _GetDataRange(float range[2]) const = 0;
+ virtual void _GetValidRegion(size_t minreg[3], size_t maxreg[3]) const;
+
+
+private:
  string _ncpaths[MAX_LEVELS];
  int _ncids[MAX_LEVELS];
  int _ncvars[MAX_LEVELS];
  int _ncminvars[MAX_LEVELS];
  int _ncmaxvars[MAX_LEVELS];
  int _ncoffsets[MAX_LEVELS];	// file ptr offset for netcdf
+ float _dataRange[2];
+ size_t _validRegMin[3];
+ size_t _validRegMax[3];    // Bounds (in voxels) of valid region relative
+							// to the finest level
 
- int	n_c;		// # filter coefficients
- int	ntilde_c;	// # lifting coefficients
+
+
+
+// int	n_c;		// # filter coefficients
+// int	ntilde_c;	// # lifting coefficients
  int	is_open_c;	// true if a file is open
  int	write_mode_c;	// true if file opened for writing
+ bool _is_alloc2d;	// space allocated for 2D data?
+ bool _is_alloc3d;	// space allocated for 3D data?
 
  static const string _blockSizeXName;
  static const string _blockSizeYName;
@@ -321,13 +372,40 @@ protected:
  static const string _lambdaName;
  static const string _gammaName;
 
-private:
- int	_objInitialized;	// has the obj successfully been initialized?
-
  int	_WaveletBlockIOBase();
 
  int open_var_write(const string &basename);
  int open_var_read(size_t ts, const char *varname, const string &basename);
+ int my_alloc2d();
+ int my_alloc3d();
+ void my_free2d();
+ void my_free3d();
+
+ virtual int	ncDefineDimsVars2D(
+	int j,
+	const string &path,
+	const int bs_dim_ids[3], 
+	const int dim_ids[3]
+
+ );
+
+ virtual int	ncVerifyDimsVars2D(
+	int j,
+	const string &path
+ );
+
+ virtual int	ncDefineDimsVars3D(
+	int j,
+	const string &path,
+	const int bs_dim_ids[3], 
+	const int dim_ids[3]
+
+ );
+
+ virtual int	ncVerifyDimsVars3D(
+	int j,
+	const string &path
+ );
 
 
 };

@@ -1,5 +1,5 @@
 //
-//      $Id: BlkMemMgr.h,v 1.5 2009/04/23 20:24:58 clynejp Exp $
+//      $Id: BlkMemMgr.h,v 1.7 2010/11/15 20:54:30 clynejp Exp $
 //
 
 #ifndef	_BlkMemMgr_h_
@@ -13,8 +13,8 @@ namespace VAPoR {
 //! \class BlkMemMgr
 //! \brief The VetsUtil BlkMemMgr class
 //! \author John Clyne
-//! \version $Revision: 1.5 $
-//! \date    $Date: 2009/04/23 20:24:58 $
+//! \version $Revision: 1.7 $
+//! \date    $Date: 2010/11/15 20:54:30 $
 //!
 //! A block-based memory allocator. Allocates contiguous runs of
 //! memory blocks from a memory pool of user defined size.
@@ -37,9 +37,10 @@ public:
  //
  //! Return a pointer to the specified amount of memory from the memory pool
  //! \param[in] num_blks Size of memory region requested in blocks
+ //! \param[in] fill If true, the allocated memory will be cleared to zero
  //! \retval ptr A pointer to the requested memory pool
  //
- void	*Alloc(size_t num_blks);
+ void	*Alloc(size_t num_blks, bool fill = false);
 
  //! Free memory
  //
@@ -67,6 +68,8 @@ public:
  static void RequestMemSize(
 	size_t blk_size, size_t num_blks, int page_aligned = 1
  );
+
+ static size_t GetBlkSize() {return(_blk_size);}
 
 private:
  static size_t	_page_aligned_req;	// requested page align memory (boolean)

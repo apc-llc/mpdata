@@ -97,7 +97,7 @@ endif
 DATA2VDF_SOURCES := $(wildcard $(DATA2VDF)/*.cpp)
 DATA2VDF_INCLUDES := -I$(DATA2VDF)
 
-DATA2VDF_DEPLIBS := -lvdf -lnetcdf -lexpat -lcommon
+DATA2VDF_DEPLIBS := -L/opt/vapor/lib -lvdf -lnetcdf -lexpat -lcommon -lproj
 
 ###################################################################################################
 #

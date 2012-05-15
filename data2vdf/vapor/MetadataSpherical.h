@@ -1,12 +1,12 @@
 //
-//      $Id: MetadataSpherical.h,v 1.2 2007/07/11 14:43:15 clynejp Exp $
+//      $Id: MetadataSpherical.h,v 1.4 2010/09/24 17:14:07 southwic Exp $
 //
 
 
 #ifndef	_MetadataSpherical_h_
 #define	_MetadataSpherical_h_
 
-#include "vapor/Metadata.h"
+#include <vapor/MetadataVDC.h>
 #ifdef WIN32
 #pragma warning(disable : 4251)
 #endif
@@ -18,10 +18,10 @@ namespace VAPoR {
 //! \class MetadataSpherical
 //! \brief A class for managing data set Spherical metadata
 //! \author John Clyne
-//! \version $Revision: 1.2 $
-//! \date    $Date: 2007/07/11 14:43:15 $
+//! \version $Revision: 1.4 $
+//! \date    $Date: 2010/09/24 17:14:07 $
 //!
-class VDF_API MetadataSpherical : public Metadata {
+class VDF_API MetadataSpherical : public MetadataVDC {
 public:
 
  MetadataSpherical(

@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock2D.h,v 1.2 2009/02/20 23:02:41 clynejp Exp $
+//      $Id: WaveletBlock2D.h,v 1.3 2009/12/10 19:21:02 clynejp Exp $
 //
 
 #ifndef	_WaveletBlock2D_h_
@@ -7,7 +7,6 @@
 
 #include <vapor/MyBase.h>
 #include <vapor/EasyThreads.h>
-#include <vapor/Metadata.h>
 #include <vapor/WaveletBlock1D.h>
 
 #include "Lifting1D.h"
@@ -19,8 +18,8 @@ namespace VAPoR {
 //! \class WaveletBlock2D
 //! \brief A tile-based, 2D wavelet transformer
 //! \author John Clyne
-//! \version $Revision: 1.2 $
-//! \date    $Date: 2009/02/20 23:02:41 $
+//! \version $Revision: 1.3 $
+//! \date    $Date: 2009/12/10 19:21:02 $
 //!
 //! This class provides a 2D, tile-based wavelet transform API
 //! based on Wim Swelden's Liftpack library.

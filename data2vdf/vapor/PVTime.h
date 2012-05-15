@@ -1,5 +1,5 @@
 //
-//      $Id: PVTime.h,v 1.2 2008/01/30 17:26:04 alannorton Exp $
+//      $Id: PVTime.h,v 1.5 2011/02/14 17:29:57 alannorton Exp $
 //
 //************************************************************************
 //								*
@@ -15,7 +15,10 @@
 #include <cmath>
 #include <string>
 #include <ctime>
-#include "vaporinternal/common.h"
+#ifndef WIN32
+#include <stdint.h>
+#endif
+#include <vapor/common.h>
 
 #ifndef TIME64_T
 #ifdef WIN32

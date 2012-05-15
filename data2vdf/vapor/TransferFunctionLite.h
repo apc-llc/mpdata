@@ -41,6 +41,10 @@ public:
 	TransferFunctionLite();
 	TransferFunctionLite(int nBits);
 	virtual ~TransferFunctionLite();
+	virtual TransferFunctionLite* deepCopy(ParamNode* newRoot){
+		//Unnecessary, since this class does not use ParamBase registration.
+		return 0;
+	}
 
     //
 	// Note:  All public methods use actual real coords.

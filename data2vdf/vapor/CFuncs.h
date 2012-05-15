@@ -1,5 +1,5 @@
 //
-//      $Id: CFuncs.h,v 1.1.1.1 2005/01/10 22:00:05 clyne Exp $
+//      $Id: CFuncs.h,v 1.3 2011/07/12 20:55:23 clynejp Exp $
 //
 //************************************************************************
 //								*
@@ -26,7 +26,7 @@
 
 #include <cmath>
 #include <string>
-#include "vaporinternal/common.h"
+#include <vapor/common.h>
 
 
 using namespace std;
@@ -35,6 +35,7 @@ namespace VetsUtil {
 
 
 COMMON_API const char	*Basename(const char *path);
+COMMON_API string Basename(string &path);
 
 
 //! Return the directory component of a UNIX path name
@@ -48,6 +49,7 @@ COMMON_API const char	*Basename(const char *path);
 //! \retval directory Returns \p directory parameter
 //!
 COMMON_API char   *Dirname(const char *pathname, char *directory);
+COMMON_API string Dirname(string &path);
 
 
 };

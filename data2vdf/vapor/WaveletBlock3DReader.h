@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DReader.h,v 1.9 2009/02/20 23:02:41 clynejp Exp $
+//      $Id: WaveletBlock3DReader.h,v 1.11 2010/06/07 16:34:48 clynejp Exp $
 //
 
 
@@ -7,7 +7,7 @@
 #define	_WavletBlock3DReader_h_
 
 #include <vapor/MyBase.h>
-#include "WaveletBlock3DIO.h"
+#include "WaveletBlockIOBase.h"
 
 namespace VAPoR {
 
@@ -15,46 +15,40 @@ namespace VAPoR {
 //! \class WaveletBlock3DReader
 //! \brief A slab reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.9 $
-//! \date    $Date: 2009/02/20 23:02:41 $
+//! \version $Revision: 1.11 $
+//! \date    $Date: 2010/06/07 16:34:48 $
 //!
 //! This class provides a low-level API for reading data volumes from 
 //! a VDF file. The Read methods contained within are the  most efficient
 //! (both in terms of memory and performance) for reading an entire data
 //! volume.
 //
-class	VDF_API WaveletBlock3DReader : public WaveletBlock3DIO {
+class	VDF_API WaveletBlock3DReader : public WaveletBlockIOBase {
 
 public:
 
  //! Constructor for the WaveletBlock3DReader class.
  //! \param[in] metadata A pointer to a Metadata structure identifying the
  //! data set upon which all future operations will apply.
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
  //! \sa Metadata, GetErrCode()
  //
  WaveletBlock3DReader(
-	const Metadata *metadata,
-	unsigned int	nthreads = 1
- );
+	const MetadataVDC &metadata
+);
 
  //! Constructor for the WaveletBlock3DReader class.
  //! \param[in] metadata Path to a metadata file for which all
  //! future class operations will apply
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, GetErrCode()
+ //! \sa MetadataVDC, GetErrCode()
  //
  WaveletBlock3DReader(
-	const char *metafile,
-	unsigned int	nthreads = 1
+	const string &metafile
  );
 
  virtual ~WaveletBlock3DReader();
@@ -67,7 +61,7 @@ public:
  //! parameter, \p reflevel indicates the resolution of the volume in
  //! the multiresolution hierarchy. The valid range of values for
  //! \p reflevel is [0..max_refinement], where \p max_refinement is the
- //! maximum finement level of the data set: Metadata::GetNumTransforms() - 1.
+ //! maximum finement level of the data set: Metadata::GetNumTransforms().
  //! volume when the volume was created. A value of zero indicates the
  //! coarsest resolution data, a value of \p max_refinement indicates the
  //! finest resolution data.
@@ -86,7 +80,8 @@ public:
  virtual int	OpenVariableRead(
 	size_t timestep,
 	const char *varname,
-	int reflevel = 0
+	int reflevel = 0,
+	int lod = 0
  );
 
  virtual int OpenVariableWrite(
@@ -130,12 +125,15 @@ public:
  //
  int	ReadSlabs(float *two_slabs, int unblock);
 
+protected:
+ void _GetDataRange(float range[2]) const {};
+
 private:
- int	_objInitialized;	// has the obj successfully been initialized?
 
  float	*lambda_blks_c[MAX_LEVELS];	// temp storage for lambda blocks
  float	*scratch_block_c;	// scratch space
  int	slab_cntr_c;
+ size_t _block_size;
 
  int	read_slabs(
 	int level,

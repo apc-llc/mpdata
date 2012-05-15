@@ -1,8 +1,8 @@
 # Toolchain selector (gnu or intel)
-TOOLCHAIN = intel
+TOOLCHAIN = gnu
 
 # Target architecture (i686 or x86_64)
-ARCH = i686
+ARCH = x86_64
 
 # Optimization level value (0, 1, 2 ... whatever supported)
 OPTLEVEL = 0

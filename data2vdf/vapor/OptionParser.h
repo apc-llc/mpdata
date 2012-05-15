@@ -1,5 +1,5 @@
 //
-//      $Id: OptionParser.h,v 1.4 2009/07/14 17:37:53 clynejp Exp $
+//      $Id: OptionParser.h,v 1.6 2010/09/24 17:14:07 southwic Exp $
 //
 //************************************************************************
 //								*
@@ -32,7 +32,7 @@
 #include <cmath>
 #include <vector>
 #include <vapor/MyBase.h>
-#include "vaporinternal/common.h"
+#include <vapor/common.h>
 
 #ifdef WIN32
 //Silence an annoying and unnecessary compiler warning
@@ -147,6 +147,8 @@ private:
 COMMON_API int	CvtToInt( const char *from, void *to);
 
 COMMON_API int	CvtToFloat(const char	*from, void *to);
+
+COMMON_API int	CvtToDouble(const char	*from, void *to);
 
 COMMON_API int	CvtToChar(const char *from, void *to);
 

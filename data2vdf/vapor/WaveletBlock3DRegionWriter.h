@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DRegionWriter.h,v 1.3 2009/02/20 23:02:41 clynejp Exp $
+//      $Id: WaveletBlock3DRegionWriter.h,v 1.6 2010/08/18 22:13:24 clynejp Exp $
 //
 
 
@@ -7,7 +7,7 @@
 #define	_WavletBlock3DRegionWriter_h_
 
 #include <vapor/MyBase.h>
-#include "WaveletBlock3DIO.h"
+#include "WaveletBlockIOBase.h"
 
 namespace VAPoR {
 
@@ -15,13 +15,13 @@ namespace VAPoR {
 //! \class WaveletBlock3DRegionWriter
 //! \brief A subregion write for VDC files
 //! \author John Clyne
-//! \version $Revision: 1.3 $
-//! \date    $Date: 2009/02/20 23:02:41 $
+//! \version $Revision: 1.6 $
+//! \date    $Date: 2010/08/18 22:13:24 $
 //!
 //! This class provides an API for writing volume sub-regions  
 //! to a VDC
 //
-class VDF_API	WaveletBlock3DRegionWriter : public WaveletBlock3DIO {
+class VDF_API	WaveletBlock3DRegionWriter : public WaveletBlockIOBase {
 
 public:
 
@@ -29,32 +29,26 @@ public:
  //!
  //! \param[in] metadata A pointer to a Metadata structure identifying the
  //! data set upon which all future operations will apply. 
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, GetErrCode()
+ //! \sa MetadataVDC, GetErrCode()
  //
  WaveletBlock3DRegionWriter(
-	const Metadata *metadata,
-	unsigned int	nthreads = 1
+	const MetadataVDC &metadata
  );
 
  //! Constructor for the WaveletBlock3DRegionWriter class. 
  //!
  //! \param[in] metafile Path to a metadata file for which all
  //! future class operations will apply
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, GetErrCode()
+ //! \sa MetadataVDC, GetErrCode()
  //
  WaveletBlock3DRegionWriter(
-	const char	*metafile,
-	unsigned int	nthreads = 1
+	const string &metafile
  );
 
  virtual ~WaveletBlock3DRegionWriter();
@@ -91,7 +85,8 @@ public:
  virtual int OpenVariableRead(
 	size_t timestep,
 	const char *varname,
-	int reflevel = 0
+	int reflevel = 0,
+	int lod = 0
  ) {SetErrMsg("Operation not supported"); return(-1);};
 
 
@@ -117,11 +112,15 @@ public:
  //! \param[in] max Maximum region extents in voxel coordinates
  //! \param[in] region The volume subregion to write
  //! \retval status Returns a non-negative value on success
- //! \sa OpenVariableWrite(), Metadata::GetDimension()
+ //! \sa OpenVariableWrite()
  //
  int	WriteRegion(
 	const float *region,
 	const size_t min[3], const size_t max[3]
+ );
+
+ int	WriteRegion(
+	const float *region
  );
 
 
@@ -147,29 +146,51 @@ public:
 	int block = 1
  );
 
+protected:
+
+ void _GetDataRange(float range[2]) const;
+ void _GetValidRegion(size_t minreg[3], size_t maxreg[3]) const; 
+
 private:
- int	_objInitialized;	// has the obj successfully been initialized?
 
  float	*_lambda_blks[MAX_LEVELS];
- float	*_padblock;
+ float	*_lambda_tiles[MAX_LEVELS];
+ float	*_padblock3d;
+ float	*_padblock2d;
+ size_t _block_size;
 
  const float *_regionData;	// Pointer to data passed to WriteRegion() 
  size_t _regMin[3];
  size_t _regMax[3];		// coordinates (in voxels) of region relative to
 						// a super-block aligned enclosing region
- size_t _regBSize[3];	// Dimensions (in blocks) of superblock-aligned
-						// enclosing region
+
+ size_t _validRegMin[3];
+ size_t _validRegMax[3];    // Bounds (in voxels) of valid region relative
+                            // to the finest level
+
 
  size_t _volBMin[3];
  size_t _volBMax[3];	// Bounds (in blocks) of subregion relative to
 						// the global volume
  int _is_open;	// open for writing
 
+ float _dataRange[2];       // min and max range of data;
+
+ bool _firstWrite;	// True first time Write() is called for an open var
+
+
  // Process a region that requies no transforms
  //
- int _WriteUntransformedRegion(
+ int _WriteUntransformedRegion3D(
 	const size_t min[3],
 	const size_t max[3],
+	const float *region,
+	int block
+ );
+ int _WriteUntransformedRegion2D(
+	const size_t bs[2],
+	const size_t min[2],
+	const size_t max[2],
 	const float *region,
 	int block
  );
@@ -177,7 +198,7 @@ private:
 
  // Copy a block-sized subvolume to a brick (block)
  //
- void brickit(
+ void brickit3d(
 	const float *srcptr,	// ptr to start of volume containing subvolume 
 	size_t nx, size_t ny, size_t nz, 	// dimensions of volume
 	size_t x, size_t y, size_t z,		// voxel coordinates of subvolume
@@ -186,7 +207,7 @@ private:
 
  // Copy a partial block-sized subvolume to a brick (block)
  //
- void brickit(
+ void brickit3d(
 	const float *srcptr,	// ptr to start of volume containing subvolume 
 	size_t nx, size_t ny, size_t nz, 	// dimensions of volume
 	size_t srcx,
@@ -198,14 +219,46 @@ private:
     float *brickptr		// brick destination
  ); 
 
+ // Copy a tile-sized subvolume to a brick (tile)
+ //
+ void brickit2d(
+	const float *srcptr,    // ptr to start of volume containing subvolume
+	const size_t bs[2],
+	size_t nx, size_t ny, // dimensions of volume
+	size_t x, size_t y,         // voxel coordinates of subvolume
+	float *brickptr                     // brick destination
+ );
 
- void copy_top_superblock(
+ // Copy a partial tile-sized subvolume to a brick (tile)
+ //
+ void brickit2d(
+	const float *srcptr,    // ptr to start of volume containing subvolume
+	const size_t bs[2],
+	size_t nx, size_t ny, // dimensions of volume
+	size_t srcx,
+	size_t srcy,    // voxel coordinates of subvolume
+	size_t dstx,
+	size_t dsty,    // coordinates within brick (in voxles) for copy
+	float *brickptr     // brick destination
+ );
+
+
+ void copy_top_superblock3d(
     int srcx,
     int srcy,
     int srcz, // coordinates (in blocks) of superblock within 
 				// superblock-aligned enclosing region.
 	float *dst_super_block	// destination super block
  );
+
+ void copy_top_superblock2d(
+	const size_t bs[2],
+	int srcx,
+	int srcy, // coordinates (in tiles) of superblock within
+				// superblock-aligned enclosing region.
+	float *dst_super_block  // destination super block
+ );
+
 
  // Recursively coarsen a data octant
  //
@@ -220,22 +273,51 @@ private:
 	int oct			// octant indicator (0-7)
  );
 
+
+ // Recursively coarsen a data quadrant
+ //
+ int process_quadrant(
+	size_t sz,          // dimension of quadrant in tiles
+	int srcx,
+	int srcy,           // Coordinates of quadrant (in tiles) relative to vol
+	int dstx,
+	int dsty,           // Coordinates (in tiles) of subregion destination
+	int quad            // quadrant indicator (0-3)
+ );
+
  // compute the min and max of a block
- void compute_minmax(
+ void compute_minmax3d(
 	const float *blkptr,
 	size_t bx, size_t by, size_t bz,
 	int level
  );
 
+ // compute the min and max of a tile
+ void compute_minmax2d(
+	const float *tileptr,
+	size_t bx, size_t by,
+	int level
+ );
 
- int	my_alloc(); 
+ int	my_alloc3d(); 
+ int	my_alloc2d(); 
  void	my_free(); 
 
- int	_WriteRegion(
+ int _WriteRegion3D(
 	const float *region,
 	const size_t min[3], const size_t max[3], 
 	int block
  );
+
+ int _WriteRegion2D(
+	const float *region,
+	const size_t min[2],
+	const size_t max[2],
+	int block
+ );
+
+ void _CloseVariable3D();
+ void _CloseVariable2D();
 
  int	_WaveletBlock3DRegionWriter();
 

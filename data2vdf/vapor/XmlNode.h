@@ -1,5 +1,5 @@
 //
-//      $Id: XmlNode.h,v 1.14 2008/06/16 22:24:33 clynejp Exp $
+//      $Id: XmlNode.h,v 1.21.2.1 2011/12/22 20:29:19 alannorton Exp $
 //
 
 #ifndef	_XmlNode_h_
@@ -21,8 +21,8 @@ namespace VAPoR {
 //! \class XmlNode
 //! \brief An Xml tree
 //! \author John Clyne
-//! \version $Revision: 1.14 $
-//! \date    $Date: 2008/06/16 22:24:33 $
+//! \version $Revision: 1.21.2.1 $
+//! \date    $Date: 2011/12/22 20:29:19 $
 //!
 //! This class manages an XML tree. Each node in the tree
 //! coresponds to an XML "parent" element. The concept
@@ -58,7 +58,7 @@ public:
  //!
  //! \param[in] tag Name of Xml node
  //! \param[in] attrs A list of Xml attribute names and values for this node
- //! \param[in] numChildren Reserve space for the indicated number of 
+ //! \param[in] numChildrenHint Reserve space for the indicated number of 
  //! children. Children must be created with
  //! the NewChild() method
  //!
@@ -66,7 +66,11 @@ public:
 	const string &tag, const map<string, string> &attrs, 
 	size_t numChildrenHint = 0
  );
-
+XmlNode(
+	const string &tag, 
+	size_t numChildrenHint = 0
+ );
+ XmlNode() {_objInitialized = false;}
  virtual XmlNode *Construct(
 	const string &tag, const map<string, string> &attrs, 
 	size_t numChildrenHint = 0
@@ -115,31 +119,47 @@ public:
  //! data to be associated with this element is the array of longs
  //! specified by \p values
  //! 
+ //! \param[in] tags Sequence of names of elements as a path to the desired node
+ //! \param[in] values Vector of longs to be converted to character data
+ //!
+ //! \retval status Returns 0 if successful
+ //
+ virtual int SetElementLong(
+	const vector<string> &tags, const vector<long> &values
+ );
+//! Set an Xml element of type long
+ //!
+ //! This method defines and sets an Xml element. The Xml character 
+ //! data to be associated with this element is the array of longs
+ //! specified by \p values
+ //! 
  //! \param[in] tag Name of the element to define/set
  //! \param[in] values Vector of longs to be converted to character data
  //!
- //! \retval status Returns a reference to vector containing the data
+ //! \retval status Returns 0 if successful
  //
- virtual vector<long> &SetElementLong(
+ virtual int SetElementLong(
 	const string &tag, const vector<long> &values
  );
-
  //! Get an Xml element's data of type long
  //!
  //! Return the character data associated with the Xml elemented 
  //! named by \p tag for this node. The data is interpreted and 
  //! returned as a vector of longs. If the element does not exist
- //! an empty vector is returned
+ //! an empty vector is returned. If ErrOnMissing() is true an 
+ //! error is generated if the element is missing;
  //!
  //! \param[in] tag Name of element
  //! \retval vector Vector of longs associated with the named elemented
  //!
- virtual vector<long> &GetElementLong(const string &tag);
+ virtual const vector<long> &GetElementLong(const string &tag) const;
+
+ 
 
  //! Return true if the named element of type long exists
  //!
  //! \param[in] tag Name of element
- //! \retval bool 
+ //! \retval value at element 
  //!
  virtual int HasElementLong(const string &tag) const;
 
@@ -152,23 +172,39 @@ public:
  //! \param[in] tag Name of the element to define/set
  //! \param[in] values Vector of doubles to be converted to character data
  //!
- //! \retval status Returns a reference to vector containing the data
+ //! \retval status 0 if successful
  //
- virtual vector<double> &SetElementDouble(
+ virtual int SetElementDouble(
 	const string &tag, const vector<double> &values
  );
 
+ //! Set an Xml element of type double, using a sequence of tags
+ //!
+ //! This method defines and sets an Xml element. The Xml character 
+ //! data to be associated with this element is the array of doubles
+ //! specified by \p values
+ //! 
+ //! \param[in] tags vector of tags to the specified element
+ //! \param[in] values Vector of doubles to be converted to character data
+ //!
+ //! \retval status 0 if successful
+ //
+ virtual int SetElementDouble(
+	const vector<string> &tags, const vector<double> &values
+ );
  //! Get an Xml element's data of type double
  //!
  //! Return the character data associated with the Xml elemented 
  //! named by \p tag for this node. The data is interpreted and 
  //! returned as a vector of doubles. If the element does not exist
- //! an empty vector is returned
+ //! an empty vector is returned. If ErrOnMissing() is true an 
+ //! error is generated if the element is missing;
  //!
  //! \param[in] tag Name of element
  //! \retval vector Vector of doubles associated with the named elemented
  //!
- virtual vector<double> &GetElementDouble(const string &tag);
+ virtual const vector<double> &GetElementDouble(const string &tag) const;
+ 
 
  //! Return true if the named element of type double exists
  //!
@@ -180,28 +216,29 @@ public:
  //! Set an Xml element of type string
  //!
  //! This method defines and sets an Xml element. The Xml character 
- //! data to be associated with this element is the array of characters
+ //! data to be associated with this element is the string 
  //! specified by \p values
  //! 
  //! \param[in] tag Name of the element to define/set
- //! \param[in] values Vector of characters to be converted to character data
+ //! \param[in] values string to be converted to character data
  //!
  //! \retval status Returns a non-negative value on success
- //! \retval status Returns a reference to string containing the data
+ //! \retval status Returns 0 if successful
  //
- virtual string &SetElementString(const string &tag, const string &str);
+ virtual int SetElementString(const string &tag, const string &values);
 
  //! Get an Xml element's data of type string
  //!
  //! Return the character data associated with the Xml elemented 
  //! named by \p tag for this node. The data is interpreted and 
  //! returned as a string. If the element does not exist
- //! an empty vector is returned
+ //! an empty vector is returned. If ErrOnMissing() is true an 
+ //! error is generated if the element is missing;
  //!
  //! \param[in] tag Name of element
  //! \retval string The string associated with the named element
  //!
- virtual string &GetElementString(const string &tag);
+ virtual const string &GetElementString(const string &tag) const;
 
  //! Set an Xml element of type string
  //!
@@ -215,12 +252,29 @@ public:
  //! \param[in] values Vector of strings to be converted to a
  //! space-separated list of characters
  //!
- //! \retval status Returns a reference to string containing the data
+ //! \retval status Returns 0 if successful
  //
- virtual string &SetElementStringVec(
-	const string &tag,const vector <string> &strvec
+ virtual int SetElementStringVec(
+	const string &tag,const vector <string> &values
  );
-
+ //! Set an Xml element of type string
+ //!
+ //! This method defines and sets an Xml element. The Xml character 
+ //! data to be associated with this element is the array of strings
+ //! specified by \p values. The array of strings is first
+ //! translated to a single string of space-separated words (contiguous
+ //! characters)
+ //! 
+ //! \param[in] tagpath sequence of tags leading from this to element
+ //! \param[in] values Vector of strings to be converted to a
+ //! space-separated list of characters
+ //!
+ //! \retval status Returns 0 if successful
+ //
+virtual int SetElementStringVec(
+    const vector<string> &tagpath, const vector <string> &values
+);
+ 
  //! Get an Xml element's data of type string
  //!
  //! Return the character data associated with the Xml elemented 
@@ -232,9 +286,10 @@ public:
  //! an empty vector is returned
  //!
  //! \param[in] tag Name of element
- //! \param[out] vec Vector of doubles associated with the named elemented
+ //! \param[out] vec Vector of strings associated with the named element
  //!
- virtual void GetElementStringVec(const string &tag, vector <string> &vec);
+ virtual void GetElementStringVec(const string &tag, vector <string> &vec) const;
+
 
  //! Return true if the named element of type string exists
  //!
@@ -296,6 +351,16 @@ public:
  //! \sa GetNumChildren()
  virtual int	DeleteChild(size_t index);
  virtual int	DeleteChild(const string &tag);
+ //!
+ //! Recursively delete all descendants of a node. 
+ //! 
+ //
+ virtual void DeleteAll();
+//!
+ //! Clear the children, but don't delete them. 
+ //! 
+ //
+ virtual void ClearChildren() {_children.clear();}
 
  //! Replace the indicated child node with specified new child node
  //!
@@ -320,7 +385,7 @@ public:
  //! could does not exist
  //! \sa GetNumChildren()
  //
- virtual XmlNode *GetChild(size_t index);
+ virtual XmlNode *GetChild(size_t index) const;
 
  //! Return the node's parent
  //!
@@ -346,7 +411,19 @@ public:
  //! \retval child Returns the indicated child, or NULL if the child
  //! could does not exist
  //
- virtual XmlNode *GetChild(const string &tag);
+ virtual XmlNode *GetChild(const string &tag) const;
+
+ //! Set or Get the Error on Missing Flag
+ //!
+ //! This method returns a reference to a flag that may be used
+ //! to control whether GetElement methods will generate an error
+ //! if the requested element is not present. If the flag is set
+ //! to true, an error will be generated if the element is not found.
+ //! By default the flag is true.
+ //!
+ //! \retval flag A reference to the Error on Missing flag
+ //
+ virtual bool &ErrOnMissing() {return (_errOnMissing); };
 
  //! Return true if the indicated child node exists
  //!
@@ -362,22 +439,35 @@ public:
  //Following is a substitute for exporting the "<<" operator in windows.
  //I don't know how to export an operator<< !
  static ostream& streamOut(ostream& os, const XmlNode& node);
+	
+ //help with strings that xml can't parse:
+ // replace all occurrences of 'input' with 'output'
+ //output should not occur in input.
+	
+ static string replaceAll(const string& sourceString, const char* input, const char* output);
+ static vector <long> _emptyLongVec;				// empty elements 
+ static vector <double> _emptyDoubleVec;
+ static vector <string> _emptyStringVec;
+ static string _emptyString;
+	
 
-private:
- int	_objInitialized;	// has the obj successfully been initialized?
-
- map <string, vector<long> > _longmap;	// node's long data
+protected:
+  map <string, vector<long> > _longmap;	// node's long data
  map <string, vector<double> > _doublemap;	// node's double data
  map <string, string> _stringmap;		// node's string data
+ bool _errOnMissing;
+private:
+ static string replacement; 
+ int	_objInitialized;	// has the obj successfully been initialized?
+
+ 
  map <string, string> _attrmap;		// node's attributes
  vector <XmlNode *> _children;				// node's children
  string _tag;						// node's tag name
- vector <long> _emptyLongVec;				// empty elements 
- vector <double> _emptyDoubleVec;
- vector <string> _emptyStringVec;
- string _emptyString;
+ 
  size_t _asciiLimit;	// length limit beyond which element data are encoded
  XmlNode *_parent;	// Node's parent
+ 
 
  // Recursively delete all chidren of the specified node. The node itself
  // is not deleted.

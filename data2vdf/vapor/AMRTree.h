@@ -1,5 +1,5 @@
 //
-//      $Id: AMRTree.h,v 1.6 2009/04/30 20:34:31 clynejp Exp $
+//      $Id: AMRTree.h,v 1.8.2.1 2011/12/01 17:29:05 clynejp Exp $
 //
 //***********************************************************************
 //                                                                      *
@@ -25,7 +25,7 @@
 #define	_AMRTree_h_
 
 #include <vector>
-#include <vaporinternal/common.h>
+#include <vapor/common.h>
 #include <vapor/MyBase.h>
 #include <vapor/EasyThreads.h>
 #include <vapor/AMRTreeBranch.h>
@@ -38,8 +38,8 @@ namespace VAPoR {
 //! \class AMRTree
 //! \brief This class manages an AMR tree data structure
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2009/04/30 20:34:31 $
+//! \version $Revision: 1.8.2.1 $
+//! \date    $Date: 2011/12/01 17:29:05 $
 //!
 //! This class manages an Adaptive Mesh Refinement tree data
 //! object for a block structured AMR grid.
@@ -234,9 +234,13 @@ public:
  //!
  //! \param[in] xyz The toplogical (i-j-k) coordinates of the base
  //! block tree branch to return
+ //! \param[in] baseblockidx The serialized offset of \p xyz
  //! \retval treebranch A pointer to a AMRTreeBranch object
  //
  const AMRTreeBranch	*GetBranch(const size_t xyz[3]) const;
+
+ //! \copydoc GetBranch()
+ const AMRTreeBranch	*GetBranch(cid_t baseblockidx) const;
 
  //! Return the user coordinate bounds of a cell
  //!
@@ -372,6 +376,17 @@ public:
  //! the indicated point. Otherwise a negative value is returned
  //!
  AMRTree::cid_t	RefineCell(AMRTree::cid_t cellid);
+
+ //! End cell refinement
+ //!
+ //! This method informs the class that cell refinement is complete,
+ //! allowing the class to build data structures that may speed
+ //! subsequent class methods. Calling this method is optional. The results
+ //! of calling this method before cell refinement is complete are undefined.
+ //!
+ //! \sa RefineCell()
+ //!
+ void EndRefinement();
 
  //! Return next node in a tree treversal
  //!

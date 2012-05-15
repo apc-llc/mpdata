@@ -21,7 +21,7 @@
 #ifndef TFINTERPOLATOR_H
 #define TFINTERPOLATOR_H
 #include "math.h"
-#include "vaporinternal/common.h"
+#include <vapor/common.h>
 namespace VAPoR {
 class PARAMS_API TFInterpolator{
 public:

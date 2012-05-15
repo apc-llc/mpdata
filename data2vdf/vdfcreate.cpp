@@ -5,14 +5,17 @@
 #include <sstream>
 
 #include <vapor/OptionParser.h>
-#include <vapor/Metadata.h>
+#include <vapor/MetadataVDC.h>
 #include <vapor/MetadataSpherical.h>
-
+#include <vapor/CFuncs.h>
+#include <vapor/WaveCodecIO.h>
+#ifdef WIN32
+#pragma warning(disable : 4996)
+#endif
 using namespace VetsUtil;
 using namespace VAPoR;
 
-namespace ns_vdfcreate
-{
+namespace ns_vdfcreate {
 
 int	cvtToExtents(const char *from, void *to);
 int	cvtTo3DBool(const char *from, void *to);
@@ -26,11 +29,14 @@ struct opt_t {
 	int	level;
 	int	nfilter;
 	int	nlifting;
+	double deltat;
+	double startt;
 	char *comment;
 	char *coordsystem;
 	char *gridtype;
 	char *usertimes;
 	char *mapprojection;
+	char *wname;
 	float extents[6];
 	int order[3];
 	int periodic[3];
@@ -39,21 +45,26 @@ struct opt_t {
 	vector <string> vars2dxy;
 	vector <string> vars2dxz;
 	vector <string> vars2dyz;
-	OptionParser::Boolean_T	mtkcompat;
+	vector <int> cratios;
+	OptionParser::Boolean_T	vdc2;
 	OptionParser::Boolean_T	help;
 } opt;
 
 OptionParser::OptDescRec_T	set_opts[] = {
 	{"dimension",1, "512x512x512",	"Data volume dimensions expressed in "
 		"grid points (NXxNYxNZ)"},
+	{"startt", 1, "0.0", "Time, in user coordinates, of the first time step"},
 	{"numts",	1, 	"1",			"Number of timesteps in the data set"},
-	{"bs",		1, 	"32x32x32",		"Internal storage blocking factor "
-		"expressed in grid points (NXxNYxNZ)"},
+	{"deltat",  1,  "1.0",   "Increment between time steps expressed in user "
+		"time coordinates"},
+	{"bs",		1, 	"-1x-1x-1",		"Internal storage blocking factor "
+		"expressed in grid points (NXxNYxNZ). Defaults: 32x32x32 (VDC type 1), "
+		"64x64x64 (VDC type 2"},
 	{"level",	1, 	"0",		"Number of approximation levels in hierarchy. "
-		"0 => no approximations, 1 => one approximation, and so on"},
-	{"nfilter",	1, 	"1",			"Number of wavelet filter coefficients"},
-	{"nlifting",1, 	"1",			"Number of wavelet lifting coefficients"},
-	{"comment",	1,	"",				"Top-level comment to be included in VDF"},
+		"0 => no approximations, 1 => one approximation, and so on (VDC 1 only)"},
+	{"nfilter",	1, 	"1","Number of wavelet filter coefficients (VDC 1 only)"},
+	{"nlifting",1, 	"1","Number of wavelet lifting coefficients (VDC 1 only)"},
+	{"comment",	1,	"",	"Top-level comment to be included in VDF"},
 	{"gridtype",	1,	"regular",	"Data grid type "
 		"(regular|layered|stretched|block_amr)"}, 
 	{"usertimes",	1,	"",	"Path to a file containing a whitespace "
@@ -62,6 +73,10 @@ OptionParser::OptDescRec_T	set_opts[] = {
 	{"mapprojection",	1,	"",	"A whitespace delineated, quoted list "
         "of PROJ key/value pairs of the form '+paramname=paramvalue'. "
 		"vdfcreate does not validate the string for correctness."},
+	{"wname",	1,	"bior3.3",	"Wavelet family used for compression "
+		"(VDC type 2, only). Recommended values are bior1.1, bior1.3, "
+		"bior1.5, bior2.2, bior2.4 ,bior2.6, bior2.8, bior3.1, bior3.3, "
+		"bior3.5, bior3.7, bior3.9, bior4.4"},
 	{"coordsystem",	1,	"cartesian","Data coordinate system "
 		"(cartesian|spherical)"},
 	{"extents",	1,	"0:0:0:0:0:0",	"Colon delimited 6-element vector "
@@ -80,8 +95,11 @@ OptionParser::OptDescRec_T	set_opts[] = {
 		"names to be included in the VDF"},
 	{"vars2dyz",1,	"",			"Colon delimited list of 3D YZ-plane variable "
 		"names to be included in the VDF"},
-	{"mtkcompat",	0,	"",			"Force compatibility with older mtk files"},
-	{"help",	0,	"",				"Print this message and exit"},
+	{"cratios",1,	"",			"Colon delimited list compression ratios. "
+		"The default is 1:10:100:500. " 
+		"The maximum compression ratio is wavelet and block size dependent."},
+	{"vdc2",	0,	"",	"Generate a VDC Type 2 .vdf file (default is VDC Type 1)"},
+	{"help",	0,	"",	"Print this message and exit"},
 	{NULL}
 };
 
@@ -90,6 +108,8 @@ OptionParser::Option_T	get_options[] = {
 	{"dimension", VetsUtil::CvtToDimension3D, &opt.dim, sizeof(opt.dim)},
 	{"bs", VetsUtil::CvtToDimension3D, &opt.bs, sizeof(opt.bs)},
 	{"numts", VetsUtil::CvtToInt, &opt.numts, sizeof(opt.numts)},
+	{"startt", VetsUtil::CvtToDouble, &opt.startt, sizeof(opt.startt)},
+	{"deltat", VetsUtil::CvtToDouble, &opt.deltat, sizeof(opt.deltat)},
 	{"level", VetsUtil::CvtToInt, &opt.level, sizeof(opt.level)},
 	{"nfilter", VetsUtil::CvtToInt, &opt.nfilter, sizeof(opt.nfilter)},
 	{"nlifting", VetsUtil::CvtToInt, &opt.nlifting, sizeof(opt.nlifting)},
@@ -97,6 +117,7 @@ OptionParser::Option_T	get_options[] = {
 	{"gridtype", VetsUtil::CvtToString, &opt.gridtype, sizeof(opt.gridtype)},
 	{"usertimes", VetsUtil::CvtToString, &opt.usertimes, sizeof(opt.usertimes)},
 	{"mapprojection", VetsUtil::CvtToString, &opt.mapprojection, sizeof(opt.mapprojection)},
+	{"wname", VetsUtil::CvtToString, &opt.wname, sizeof(opt.wname)},
 	{"coordsystem", VetsUtil::CvtToString, &opt.coordsystem, sizeof(opt.coordsystem)},
 	{"extents", cvtToExtents, &opt.extents, sizeof(opt.extents)},
 	{"order", cvtToOrder, &opt.order, sizeof(opt.order)},
@@ -106,28 +127,41 @@ OptionParser::Option_T	get_options[] = {
 	{"vars2dxy", VetsUtil::CvtToStrVec, &opt.vars2dxy, sizeof(opt.vars2dxy)},
 	{"vars2dxz", VetsUtil::CvtToStrVec, &opt.vars2dxz, sizeof(opt.vars2dxz)},
 	{"vars2dyz", VetsUtil::CvtToStrVec, &opt.vars2dyz, sizeof(opt.vars2dyz)},
-	{"mtkcompat", VetsUtil::CvtToBoolean, &opt.mtkcompat, sizeof(opt.mtkcompat)},
+	{"cratios", VetsUtil::CvtToIntVec, &opt.cratios, sizeof(opt.cratios)},
+	{"vdc2", VetsUtil::CvtToBoolean, &opt.vdc2, sizeof(opt.vdc2)},
 	{"help", VetsUtil::CvtToBoolean, &opt.help, sizeof(opt.help)},
 	{NULL}
 };
+
+const char *ProgName;
+
+void ErrMsgCBHandler(const char *msg, int) {
+    cerr << ProgName << " : " << msg << endl;
+}
+
 
 extern "C" int vdfcreate(int argc, char **argv) {
 
 	OptionParser op;
 
+	MyBase::SetErrMsgCB(ErrMsgCBHandler);
+
+	//
+	// Parse command line arguments
+	//
+	ProgName = Basename(argv[0]);
+
 	size_t bs[3];
 	size_t dim[3];
 	string	s;
-	Metadata *file;
+	MetadataVDC *file;
 
 
 	if (op.AppendOptions(set_opts) < 0) {
-		cerr << argv[0] << " : " << op.GetErrMsg();
 		exit(1);
 	}
 
 	if (op.ParseOptions(&argc, argv, get_options) < 0) {
-		cerr << argv[0] << " : " << OptionParser::GetErrMsg();
 		exit(1);
 	}
 
@@ -143,90 +177,147 @@ extern "C" int vdfcreate(int argc, char **argv) {
 		exit(1);
 	}
 
-	bs[0] = opt.bs.nx;
-	bs[1] = opt.bs.ny;
-	bs[2] = opt.bs.nz;
 	dim[0] = opt.dim.nx;
 	dim[1] = opt.dim.ny;
 	dim[2] = opt.dim.nz;
 
 	s.assign(opt.coordsystem);
-	if (s.compare("spherical") == 0) {
+
+	if (opt.vdc2) {
+
+		if (opt.level) {
+			cerr << "The -level option is not supported with VDC2 data" << endl;
+			exit(1);
+		}
+
+		string wname(opt.wname);
+		string wmode;
+		if ((wname.compare("bior1.1") == 0) ||
+			(wname.compare("bior1.3") == 0) ||
+			(wname.compare("bior1.5") == 0) ||
+			(wname.compare("bior3.3") == 0) ||
+			(wname.compare("bior3.5") == 0) ||
+			(wname.compare("bior3.7") == 0) ||
+			(wname.compare("bior3.9") == 0)) {
+
+			wmode = "symh"; 
+		}
+		else if ((wname.compare("bior2.2") == 0) ||
+			(wname.compare("bior2.4") == 0) ||
+			(wname.compare("bior2.6") == 0) ||
+			(wname.compare("bior2.8") == 0) ||
+			(wname.compare("bior4.4") == 0)) {
+
+			wmode = "symw"; 
+		}
+		else {
+			wmode = "sp0"; 
+		}
+
+		if (opt.bs.nx < 0) {
+			for (int i=0; i<3; i++) bs[i] = 64;
+		}
+		else {
+			bs[0] = opt.bs.nx; bs[1] = opt.bs.ny; bs[2] = opt.bs.nz;
+		}
+
+
+		vector <size_t> cratios;
+		for (int i=0;i<opt.cratios.size();i++)cratios.push_back(opt.cratios[i]);
+
+		if (cratios.size() == 0) {
+			cratios.push_back(1);
+			cratios.push_back(10);
+			cratios.push_back(100);
+			cratios.push_back(500);
+		}
+
+		size_t maxcratio = WaveCodecIO::GetMaxCRatio(bs, wname, wmode);
+		for (int i=0;i<cratios.size();i++) {
+			if (cratios[i] == 0 || cratios[i] > maxcratio) {
+				MyBase::SetErrMsg(
+					"Invalid compression ratio (%d) for configuration "
+					"(block_size, wavename)", cratios[i]
+				);
+				exit(1);
+			}
+		}
+
+		file = new MetadataVDC(dim,bs,cratios,wname,wmode);
+	}
+	else if (s.compare("spherical") == 0) {
 		size_t perm[] = {opt.order[0], opt.order[1], opt.order[2]};
+
+		if (opt.bs.nx < 0) {
+			for (int i=0; i<3; i++) bs[i] = 32;
+		}
+		else {
+			bs[0] = opt.bs.nx; bs[1] = opt.bs.ny; bs[2] = opt.bs.nz;
+		}
 
 		file = new MetadataSpherical(
 			dim,opt.level,bs,perm, opt.nfilter,opt.nlifting
 		);
 	}
 	else {
-		if (opt.mtkcompat) {
-			file = new Metadata(
-				dim,opt.level,bs,opt.nfilter,opt.nlifting, 0, 0
-			);
+		if (opt.bs.nx < 0) {
+			for (int i=0; i<3; i++) bs[i] = 32;
 		}
 		else {
-			file = new Metadata(
-				dim,opt.level,bs,opt.nfilter,opt.nlifting
-			);
+			bs[0] = opt.bs.nx; bs[1] = opt.bs.ny; bs[2] = opt.bs.nz;
 		}
+		file = new MetadataVDC(
+			dim,opt.level,bs,opt.nfilter,opt.nlifting
+		);
 	}
 
-	if (Metadata::GetErrCode()) {
-		cerr << Metadata::GetErrMsg() << endl;
+	if (MyBase::GetErrCode()) {
 		exit(1);
 	}
 
 	if (strlen(opt.usertimes)) {
 		vector <double> usertimes;
 		if (getUserTimes(opt.usertimes, usertimes)<0) {
-			cerr << MyBase::GetErrMsg() << endl;
 			exit(1);
 		}
 		if (file->SetNumTimeSteps(usertimes.size()) < 0) {
-			cerr << Metadata::GetErrMsg() << endl;
 			exit(1);
 		}
 		for (size_t t=0; t<usertimes.size(); t++) {
 			vector <double> vec(1,usertimes[t]);
 			if (file->SetTSUserTime(t, vec) < 0) {
-				cerr << Metadata::GetErrMsg() << endl;
 				exit(1);
 			}
 		}
-	}
-	else {
+	} else {
 		if (file->SetNumTimeSteps(opt.numts) < 0) {
-			cerr << Metadata::GetErrMsg() << endl;
 			exit(1);
+		}
+		double usertime = opt.startt;
+		for (size_t t=0; t < opt.numts; t++) {
+			vector <double> vec(1,usertime);
+			if(file->SetTSUserTime(t,vec) < 0) {
+				exit(1);
+			}
+			usertime += opt.deltat;
 		}
 	}
 
 	if (strlen(opt.mapprojection)) {
 		if (file->SetMapProjection(opt.mapprojection) < 0) {
-			cerr << Metadata::GetErrMsg() << endl;
 			exit(1);
 		}
 	}
 
 	s.assign(opt.comment);
 	if (file->SetComment(s) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
 
 	s.assign(opt.gridtype);
 	if (file->SetGridType(s) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
-
-#ifdef	DEAD
-	s.assign(opt.coordsystem);
-	if (file->SetCoordSystemType(s) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
-		exit(1);
-	}
-#endif
 
 	int doExtents = 0;
 	for(int i=0; i<5; i++) {
@@ -242,7 +333,6 @@ extern "C" int vdfcreate(int argc, char **argv) {
 			extents.push_back(opt.extents[i]);
 		}
 		if (file->SetExtents(extents) < 0) {
-			cerr << Metadata::GetErrMsg() << endl;
 			exit(1);
 		}
 	}
@@ -253,7 +343,6 @@ extern "C" int vdfcreate(int argc, char **argv) {
 		for (int i=0; i<3; i++) periodic_vec.push_back(opt.periodic[i]);
 
 		if (file->SetPeriodicBoundary(periodic_vec) < 0) {
-			cerr << Metadata::GetErrMsg() << endl;
 			exit(1);
 		}
 	}
@@ -275,33 +364,22 @@ extern "C" int vdfcreate(int argc, char **argv) {
 		}
 	}
 
-	vector <string> allvars;
-	for (int i=0;i<opt.vars3d.size();i++) allvars.push_back(opt.vars3d[i]);
-	for (int i=0;i<opt.vars2dxy.size();i++) allvars.push_back(opt.vars2dxy[i]);
-	for (int i=0;i<opt.vars2dxz.size();i++) allvars.push_back(opt.vars2dxz[i]);
-	for (int i=0;i<opt.vars2dyz.size();i++) allvars.push_back(opt.vars2dyz[i]);
-
-	if (file->SetVariableNames(allvars) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
+	if (file->SetVariables3D(opt.vars3d) < 0) {
 		exit(1);
 	}
 
 	if (file->SetVariables2DXY(opt.vars2dxy) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
 	if (file->SetVariables2DXZ(opt.vars2dxz) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
 	if (file->SetVariables2DYZ(opt.vars2dyz) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
 
 
 	if (file->Write(argv[1]) < 0) {
-		cerr << Metadata::GetErrMsg() << endl;
 		exit(1);
 	}
 
@@ -393,5 +471,5 @@ int	getUserTimes(const char *path, vector <double> &timevec) {
 	return(0);
 }
 
-}; // namespace ns_vdfcreate
+} // namespace ns_vdfcreate
 

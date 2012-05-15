@@ -14,7 +14,7 @@
 
 namespace VAPoR {
 
-class XmlNode;
+class ParamNode;
 
 class PARAMS_API ColorMapBase : public ParsedXml 
 {
@@ -56,7 +56,7 @@ public:
 
   const ColorMapBase& operator=(const ColorMapBase &cmap);
 
-  XmlNode* buildNode();
+  ParamNode* buildNode();
 
   void  clear();
 
@@ -89,7 +89,7 @@ public:
                                    const char **attribs);
   virtual bool elementEndHandler(ExpatParseMgr*, int depth, std::string &tag);
  
-
+	
 protected:
 
   int leftIndex(float val);
@@ -142,6 +142,7 @@ private:
   static const string _maxTag;
   static const string _controlPointTag;  
   static const string _cpHSVTag;
+  static const string _cpRGBTag;
   static const string _cpValueTag;
 };
 };

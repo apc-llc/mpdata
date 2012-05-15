@@ -1,5 +1,5 @@
 //
-//      $Id: ImpExp.h,v 1.6 2005/10/24 18:18:12 clyne Exp $
+//      $Id: ImpExp.h,v 1.7 2010/09/24 17:14:07 southwic Exp $
 //
 
 
@@ -9,9 +9,9 @@
 #include <stack>
 #include <expat.h>
 #include <vapor/MyBase.h>
-#include <vaporinternal/common.h>
+#include <vapor/common.h>
 #include <vapor/XmlNode.h>
-#include "vapor/ExpatParseMgr.h"
+#include <vapor/ExpatParseMgr.h>
 #ifdef WIN32
 #pragma warning(disable : 4251)
 #endif
@@ -22,8 +22,8 @@ namespace VAPoR {
 //! \class ImpExp
 //! \brief A class for managing data set metadata
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2005/10/24 18:18:12 $
+//! \version $Revision: 1.7 $
+//! \date    $Date: 2010/09/24 17:14:07 $
 //!
 //! The ImpExp class is used to import/export state to/from a VAPoR session
 //!

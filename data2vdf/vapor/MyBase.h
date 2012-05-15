@@ -1,5 +1,5 @@
 //
-//      $Id: MyBase.h,v 1.21 2009/09/21 18:39:23 clynejp Exp $
+//      $Id: MyBase.h,v 1.25 2010/09/24 17:14:07 southwic Exp $
 //
 //************************************************************************
 //								*
@@ -21,16 +21,6 @@
 //					probably should be in the STL but aren't.
 //
 
-//! \class MyBase
-//! \brief VetsUtil base class
-//! \author John Clyne
-//! \version 0.1
-//! \date    Mon Dec 13 17:15:12 MST 2004
-//! A collection of general purpose utilities - things that
-//!                  probably should be in the STL but aren't.
-//!
-
-
 #ifndef	_MyBase_h_
 #define	_MyBase_h_
 
@@ -39,7 +29,14 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include "vaporinternal/common.h"
+#include <vapor/common.h>
+
+#ifdef	NEW_DEBUG
+#include <new>
+void * operator new (size_t sz);
+void * operator new[] (size_t sz);
+#endif
+
 
 #ifdef WIN32
 //Silence an annoying and unnecessary compiler warning
@@ -48,6 +45,16 @@
 using namespace std;
 
 namespace VetsUtil {
+
+
+//! \class MyBase
+//! \brief VetsUtil base class
+//! \author John Clyne
+//! \version 0.1
+//! \date    Mon Dec 13 17:15:12 MST 2004
+//! A collection of general purpose utilities - things that
+//!                  probably should be in the STL but aren't.
+//!
 
 //default values used for variables outside valid grid
 const float ABOVE_GRID = 0.f;
@@ -74,7 +81,7 @@ public:
  //! the stored error message. The method will also set the error
  //! code to 1.
  //! \param[in] format A 'C' style sprintf format string.
- //! \param[in] arg... Arguments to format 
+ //! \param[in] args... Arguments to format 
  //! \sa GetErrMsg(), GetErrCode()
  //
  static void	SetErrMsg(const char *format, ...);
@@ -104,7 +111,7 @@ public:
  //! Record an error code
  // 
  //! Sets the error code to the indicated value. 
- //! \param[in] code The error code
+ //! \param[in] err_code The error code
  //! \sa GetErrMsg(), GetErrCode(), SetErrMsg()
  //
  static void	SetErrCode(int err_code) { ErrCode = err_code; }
@@ -146,7 +153,7 @@ public:
  //! all messages logged with SetErrMsg() will be written. The default
  //! file pointer is NULL. I.e. by default error messages logged by 
  //! SetErrMsg() are not written.
- //! \param[in] A file pointer opened for writing or NULL
+ //! \param[in] fp A file pointer opened for writing or NULL
  //! \sa SetErrMsg()
  //
  static void SetErrMsgFilePtr(FILE *fp) { ErrMsgFilePtr = fp; };
@@ -210,7 +217,7 @@ public:
  //! all messages logged with SetDiagMsg() will be written. The default
  //! file pointer is NULL. I.e. by default error messages logged by 
  //! SetDiagMsg() are not written.
- //! \param[in] A file pointer opened for writing or NULL
+ //! \param[in] fp A file pointer opened for writing or NULL
  //! \sa SetDiagMsg()
  //
  static void SetDiagMsgFilePtr(FILE *fp) { DiagMsgFilePtr = fp; };

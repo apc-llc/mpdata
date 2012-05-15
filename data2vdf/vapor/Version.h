@@ -1,5 +1,5 @@
 //
-//      $Id: Version.h,v 1.23 2009/09/30 21:47:29 alannorton Exp $
+//      $Id: Version.h,v 1.32 2011/04/04 22:07:32 alannorton Exp $
 //
 //	WARNING: Version.h is generated automatically from Version.h.sed
 //
@@ -36,8 +36,8 @@
 
 #include <string>
 #include <cstdlib>
-#include "vapor/MyBase.h"
-#include "vaporinternal/common.h"
+#include <vapor/MyBase.h>
+#include <vapor/common.h>
 
 using namespace std;
 
@@ -74,15 +74,15 @@ public:
  //! advanced.
  //
  static const string &GetDateString() {
-	_dateString.assign("$Date: 2009/09/30 21:47:29 $"); return(_dateString);
+	_dateString.assign("$Date: 2011/04/04 22:07:32 $"); return(_dateString);
  }
  static int Compare(int major, int minor, int minorminor) ;
  static int Compare(std::string ver1, std::string ver2);
 
 private:
- static const int _majorVersion = 1;
- static const int _minorVersion = 5;
- static const int _minorMinorVersion = 2;
+ static const int _majorVersion = 2;
+ static const int _minorVersion = 1;
+ static const int _minorMinorVersion = 0;
  static string _formatString;
  static string _dateString;
 

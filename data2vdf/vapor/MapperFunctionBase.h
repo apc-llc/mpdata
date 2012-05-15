@@ -28,18 +28,19 @@
 #include <vapor/OpacityMapBase.h>
 #include <vapor/ColorMapBase.h>
 #include <vapor/tfinterpolator.h>
-#include "vapor/ParamsBase.h"
+#include <vapor/ParamsBase.h>
 
 namespace VAPoR {
 class XmlNode;
 class ParamNode;
-class PARAMS_API MapperFunctionBase : public ParsedXml 
+class PARAMS_API MapperFunctionBase : public ParamsBase 
 {
 
 public:
-	MapperFunctionBase();
-	MapperFunctionBase(int nBits);
+	MapperFunctionBase(const string& name);
+	MapperFunctionBase(int nBits, const string& name);
 	MapperFunctionBase(const MapperFunctionBase &mapper);
+	
 	virtual ~MapperFunctionBase();
 
     //
@@ -178,7 +179,8 @@ public:
 	// except for specifying separate color and opacity bounds,
 	// and not having a name attribute
     //
-	virtual XmlNode* buildNode(const string& tfname); 
+	
+	virtual ParamNode* buildNode(); 
 
 	virtual bool elementStartHandler(ExpatParseMgr*, int depth, 
                                      std::string&, const char **);
@@ -212,6 +214,12 @@ protected:
 	static const string _leftOpacityBoundAttr;
 	static const string _rightOpacityBoundAttr;
     static const string _opacityCompositionAttr;
+	//Several attributes became tags after version 1.5:
+	static const string _leftColorBoundTag;
+	static const string _rightColorBoundTag;
+	static const string _leftOpacityBoundTag;
+	static const string _rightOpacityBoundTag;
+    static const string _opacityCompositionTag;
 	static const string _hsvAttr;
 	static const string _positionAttr;
 	static const string _opacityAttr;

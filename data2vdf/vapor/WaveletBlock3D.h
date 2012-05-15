@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3D.h,v 1.6 2009/02/20 23:02:41 clynejp Exp $
+//      $Id: WaveletBlock3D.h,v 1.7 2009/12/10 19:21:02 clynejp Exp $
 //
 
 #ifndef	_WaveletBlock3D_h_
@@ -7,7 +7,6 @@
 
 #include <vapor/MyBase.h>
 #include <vapor/EasyThreads.h>
-#include <vapor/Metadata.h>
 #include <vapor/WaveletBlock1D.h>
 
 #include "Lifting1D.h"
@@ -19,8 +18,8 @@ namespace VAPoR {
 //! \class WaveletBlock3D
 //! \brief A block-based, 3D wavelet transformer
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2009/02/20 23:02:41 $
+//! \version $Revision: 1.7 $
+//! \date    $Date: 2009/12/10 19:21:02 $
 //!
 //! This class provides a 3D, block-based wavelet transform API
 //! based on Wim Swelden's Liftpack library.

@@ -1,12 +1,12 @@
 //
-//      $Id: WaveletBlock3DBufWriter.h,v 1.7 2009/02/20 23:02:41 clynejp Exp $
+//      $Id: WaveletBlock3DBufWriter.h,v 1.10 2010/09/24 17:14:07 southwic Exp $
 //
 
 
 #ifndef	_WavletBlock3DBufWriter_h_
 #define	_WavletBlock3DBufWriter_h_
 
-#include "vapor/WaveletBlock3DWriter.h"
+#include <vapor/WaveletBlock3DWriter.h>
 
 namespace VAPoR {
 
@@ -14,8 +14,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DBufWriter
 //! \brief A slice-based reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.7 $
-//! \date    $Date: 2009/02/20 23:02:41 $
+//! \version $Revision: 1.10 $
+//! \date    $Date: 2010/09/24 17:14:07 $
 //!
 //! This class provides an API for reading volumes
 //! from a VDF file one slice at a time.
@@ -27,31 +27,25 @@ public:
  //! Constructor for the WaveletBlock3DBufWriter class.
  //! \param[in,out] metadata A pointer to a Metadata structure identifying the
  //! data set upon which all future operations will apply.
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, GetErrCode()
+ //! \sa MetadataVDC, GetErrCode()
  //
  WaveletBlock3DBufWriter(
-	Metadata *metadata,
-	unsigned int    nthreads = 1
+	const MetadataVDC &metadata
  );
 
  //! Constructor for the WaveletBlock3DBufWriter class.
  //! \param[in] metafile Path to a metadata file for which all
  //! future class operations will apply
- //! \param[in] nthreads The number of parallel execution threads to
- //! create.
  //! \note The success or failure of this constructor can be checked
  //! with the GetErrCode() method.
  //!
- //! \sa Metadata, GetErrCode()
+ //! \sa MetadataVDC, GetErrCode()
  //
  WaveletBlock3DBufWriter(
-	const char	*metafile,
-	unsigned int    nthreads = 1
+	const string &metafile
  );
 
  virtual ~WaveletBlock3DBufWriter();
@@ -105,13 +99,13 @@ public:
  //!
  //! \param[in] slice A slices of volume data
  //! \retval status Returns a non-negative value on success
- //! \sa OpenVariableRead(), Metadata::GetDimension()
+ //! \sa OpenVariableRead()
  //!
  int	WriteSlice(const float *slice);
 
+protected:
 
 private:
- int	_objInitialized;	// has the obj successfully been initialized?
 
  int	slice_cntr_c;
 

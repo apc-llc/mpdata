@@ -1,5 +1,5 @@
 //
-//      $Id: AMRTreeBranch.h,v 1.6 2009/04/23 21:07:08 clynejp Exp $
+//      $Id: AMRTreeBranch.h,v 1.8.2.1 2011/12/01 17:29:05 clynejp Exp $
 //
 //***********************************************************************
 //                                                                      *
@@ -24,7 +24,7 @@
 #define	_AMRTreeBranch_h_
 
 #include <vector>
-#include <vaporinternal/common.h>
+#include <vapor/common.h>
 #include <vapor/MyBase.h>
 #include <vapor/EasyThreads.h>
 #include <vapor/XmlNode.h>
@@ -36,8 +36,8 @@ namespace VAPoR {
 //! \class AMRTreeBranch
 //! \brief This class manages an octree data structure
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2009/04/23 21:07:08 $
+//! \version $Revision: 1.8.2.1 $
+//! \date    $Date: 2011/12/01 17:29:05 $
 //!
 //! This class manages a branch of Adaptive Mesh Refinement tree data 
 //! structure. 
@@ -297,7 +297,25 @@ public:
  //
  AMRTreeBranch::cid_t	RefineCell(cid_t cellid);
 
+
+ //! \copydoc AMRTree::EndRefinement()
+ //!
+ //
+ void EndRefinement();
+
+ //! \copydoc AMRTree::GetNextCell()
+ //
  AMRTreeBranch::cid_t	GetNextCell(bool restart);
+
+ //! Return the serialized offset of the block with id \param cellid
+ //!
+ //! This method returns the offset to the indicated cell in a breath-first
+ //! traversal of the tree.
+ //!
+ //! \retval offset Returns a negative int of \p cellid is invalid, otherwise
+ //! returns the offset of the cell
+ //
+ long GetCellOffset(cid_t cellid) const;
 
  int SetParentTable(const vector<long> &table);
 
@@ -317,6 +335,7 @@ private:
 	octree();
 	void clear();
 	cid_t refine_cell(cid_t cellid);
+	void end_refinement();
 	cid_t get_parent(cid_t cellid) const;
 
 	//
@@ -334,6 +353,8 @@ private:
 	// treversed a negative number is returned.
 	//
 	cid_t get_next(bool restart);
+
+	long get_offset(cid_t cellid) const;
 
 	// 
 	// Return the octant occupied by 'cellid'. Octants are numbered
@@ -365,6 +386,8 @@ private:
 	vector <cid_t> _num_cells;
 	int _max_level;	// maximum refinment level in tree. Base level is 0
 
+	vector <long> _offsets; // vector of offsets to speed breath-first search 
+
 	typedef struct {
 		cid_t parent;
 		cid_t child;	// id of first child. Remaining children have
@@ -374,6 +397,8 @@ private:
 	vector <_node_t> _tree;	// interal octree representation.
 
 	void _init();
+
+
  };
 
 

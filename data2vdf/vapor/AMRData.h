@@ -1,5 +1,5 @@
 //
-//      $Id: AMRData.h,v 1.6 2009/04/30 20:34:31 clynejp Exp $
+//      $Id: AMRData.h,v 1.10 2011/01/25 21:06:38 clynejp Exp $
 //
 //***********************************************************************
 //                                                                      *
@@ -25,7 +25,7 @@
 #define	_AMRData_h_
 
 #include <vector>
-#include <vaporinternal/common.h>
+#include <vapor/common.h>
 #include <vapor/MyBase.h>
 #include <vapor/AMRTree.h>
 
@@ -36,8 +36,8 @@ namespace VAPoR {
 //! \class AMRData
 //! \brief This class manages an Adaptive Mesh Refinement grid.
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2009/04/30 20:34:31 $
+//! \version $Revision: 1.10 $
+//! \date    $Date: 2011/01/25 21:06:38 $
 //!
 //! This class manages block-structured Adaptive Mesh Refinement 
 //! grids.
@@ -49,7 +49,7 @@ namespace VAPoR {
 //! \note All blocks in the AMR grid, whether leaf or non-leaf nodes, contain
 //! data. 
 //!
-//! This class is derived from the MyBase base
+//! This class is derived from the \ref MyBase base
 //! class. Hence all of the methods make use of MyBase's
 //! error reporting capability - the success of any method
 //! (including constructors) can (and should) be tested
@@ -59,7 +59,7 @@ namespace VAPoR {
 //! \sa AMRTree
 //
 
-class AMRData : public VetsUtil::MyBase {
+class AMRData : public  VetsUtil::MyBase {
 
 public:
 
@@ -70,17 +70,19 @@ public:
  //! Construct block structured AMR grid data object. The \param tree 
  //! parameter defines the octree hierarchy for the grid. The AMR grid
  //! defined by this object may be a subdomain of the tree pointed to by
- //! \p tree. The \p min and \p max parameters may be used to restrict
+ //! \p tree. The \p bmin and \p bmax parameters may be used to restrict
  //! the spatial domain to a subset of base blocks. Similarly, the 
  //! \p reflevel parameter may be used to restrict the refinement level
  //!
  //! \param[in] tree A pointer to an initialized AMRTree 
  //! \param[in] cell_dim A three-element array specifying the topological
  //! dimensions, in voxels, of all blocks in the grid
- //! \param[in] min A three-element array specifying the coordinates, in
- //! base blocks, of the minimum extents of the subgrid.
- //! \param[in] max A three-element array specifying the coordinates, in
- //! base blocks, of the maximum extents of the subgrid.
+ //! \param[in] bmin A three-element array specifying the coordinates, in
+ //! base blocks, of the minimum extents of the subgrid. The default is
+ //! (0,0,0).
+ //! \param[in] bmax A three-element array specifying the coordinates, in
+ //! base blocks, of the maximum extents of the subgrid. The default is
+ //! is AMRTree::GetBaseDim()[i] - 1
  //! \param[in] reflevel The maximum refinement level of the grid.
  //! If a negative value is specified, the refinement level of the tree
  //! pointed to by the \p tree parameter is used.
@@ -91,32 +93,25 @@ public:
  AMRData(
 	const AMRTree *tree,
 	const size_t cell_dim[3],
-	const size_t min[3],
-	const size_t max[3],
+	const size_t bmin[3],
+	const size_t bmax[3],
 	int reflevel = -1
  );
 
- //! Constructor for the AMRData class.
+ //! \copydoc AMRData::AMRData()
  //!
- //! Construct block structured AMR grid data object. The \param tree 
- //! parameter defines the octree hierarchy for the grid. 
- //! The 
- //! \p reflevel parameter may be used to restrict the refinement level
- //!
- //! \param[in] tree A pointer to an initialized AMRTree 
- //! \param[in] cell_dim A three-element array specifying the topological
- //! dimensions, in voxels, of all blocks in the grid
- //! \param[in] reflevel The maximum refinement level of the grid.
- //! If a negative value is specified, the refinement level of the tree
- //! pointed to by the \p tree parameter is used.
- //! 
- //! \note The AMRTree object is shallow copied - it's contents may not be
- //! changed by application until after this object is destroyed.
  //
  AMRData(
 	const AMRTree *tree,
 	const size_t cell_dim[3],
 	int reflevel = -1
+ );
+
+ //! \copydoc AMRData::AMRData()
+ //!
+ //
+ AMRData(
+	const AMRTree *tree
  );
 
  //! Constructor an AMRData object from a Paramesh (FLASH) AMR data set.
@@ -150,7 +145,7 @@ public:
 	int reflevel = -1
  );
 
- virtual ~AMRData();
+ virtual ~AMRData() {_AMRDataFree();};
 
  //! Change the spatial region of interest
  //!
@@ -219,12 +214,48 @@ public:
  //! \param[in] path Path name of the file to be read
  //! \param[in] reflevel The maximum refinement level to write. If negative,
  //! the maximum current refinement level defined by the object is read
+ //! \param[in] bmin Minimum bounds of data subregion expressed in block
+ //! coordinates. The default is the minimum bounds the object was 
+ //! constructed with.
+ //! \param[in] bmax Maximum bounds of data subregion expressed in block
+ //! coordinates. The default is the maximum bounds the object was 
+ //! constructed with.
  //!
  //! \sa GetRegion(), SetRegion()
  //
  int ReadNCDF(
     const string &path,
+	const size_t bmin[3],
+	const size_t bmax[3],
 	int reflevel = -1
+ );
+
+ //! \copydoc AMRData::ReadNCDF()
+ //!
+ int ReadNCDF(
+    const string &path,
+	int reflevel = -1
+ );
+
+ //! Read AMRData attributes from a netCDF file
+ //!
+ //! This static method can be used to return attribute data from 
+ //! a netCDF file generated by WriteNCDF(). 
+ //!
+ //! \param[in] path String containing path to input file
+ //! \param[out] cell_dim Three element array containing the the dimensions
+ //! of each cell in the AMR data structure
+ //! \param[out] bmin Minimum bounds of AMR mesh in block coordinates
+ //! \param[out] bmax Maximum bounds of AMR mesh in block coordinates
+ //! \param[out] data_range Minimum and maximum values of floating point
+ //! data stored in the mesh.
+ //! \param[out] num_nodes Total number of nodes (blocks) in AMR mesh
+ //!
+ //! \retval status A negative int is returned on failure.
+ //
+ static int ReadAttributesNCDF(
+	const string &path, size_t cell_dim[3], size_t bmin[3],  size_t bmax[3],
+	float data_range[2], int &reflevel, size_t &num_nodes
  );
 
 
@@ -283,9 +314,11 @@ public:
  const float *GetDataRange() const {return (_dataRange);};
 
 
-
  const AMRTree	*GetTree() const {return(_tree);};
 
+ void GetBounds(size_t bmin[3], size_t bmax[3]) const {
+	for (int i=0; i<3; i++) {bmin[i] = _bmin[i]; bmax[i] = _bmax[i];}
+ }
 
 private:
 
@@ -296,7 +329,6 @@ private:
  static const string _varToken;
  static const string _blockMinToken;
  static const string _blockMaxToken;
- static const string _cellDimToken;
  static const string _refinementLevelToken;
  static const string _scalarRangeToken;
 			
@@ -316,6 +348,8 @@ private:
 	const size_t max[3],
 	int reflevel = -1
  );
+
+ void	_AMRDataFree();
 
  int paramesh_copy_data(
 	int index,
