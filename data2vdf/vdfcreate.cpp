@@ -468,7 +468,7 @@ int	getUserTimes(const char *path, vector <double> &timevec) {
 		return(-1);
 	}
 
-	return(0);
+	return 0;
 }
 
 } // namespace ns_vdfcreate

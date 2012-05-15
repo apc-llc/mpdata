@@ -732,7 +732,7 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		fprintf(stdout, "min and max values of data output: %g, %g\n",range[0], range[1]);
 	}
 
-	exit(0);
+	return 0;
 }
 
 } // namespace ns_raw2vdf
