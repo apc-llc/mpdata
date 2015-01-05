@@ -1,0 +1,40 @@
+\DeclareOptionBeamer{compress}{\beamer@compresstrue}
+\ProcessOptionsBeamer
+
+\mode<presentation>
+
+% Inactive colors
+\setbeamercolor{uppercolI}{fg=white,bg=gray!30}
+\setbeamercolor{lowercolI}{fg=gray!30,bg=violet!5}
+
+% Highlighted colors
+\setbeamercolor{uppercolH}{fg=white,bg=red!80}
+\setbeamercolor{lowercolH}{fg=black,bg=red!5}
+
+% Active colors
+\setbeamercolor{uppercolA}{fg=white,bg=violet!85}
+\setbeamercolor{lowercolA}{fg=black,bg=violet!5}
+
+\useoutertheme[section=false,subsection=false,footline=authorinstututetitle]{miniframes}
+%\useinnertheme{circles}
+
+\definecolor{beamer@blendedyellow}{RGB}{255, 255, 153}
+\definecolor{beamer@blendedblue}{RGB}{41, 38, 191}
+\definecolor{beamer@blendedpurple}{RGB}{29, 28, 97}
+
+\setbeamercolor{section in head/foot}{bg=black}
+%\setbeamercolor{section in head/foot}{fg=white}
+%\setbeamercolor{subsection in head/foot}{bg=yellow}
+\setbeamercolor{title}{bg=beamer@blendedpurple}
+%\setbeamercolor{title}{fg=white}
+\setbeamercolor{institute}{fg=white}
+\setbeamercolor{frametitle}{bg=beamer@blendedpurple}
+%\setbeamercolor{frametitle}{fg=white}
+\setbeamercolor{author}{fg=white}
+\setbeamercolor{date}{fg=white}
+%\setbeamercolor{item}{fg=black}
+\setbeamercolor{normal text}{fg=black,size=8pt}
+%\setbeamercolor{math text}{fg=black}
+
+\mode
+<all>

@@ -1,0 +1,30 @@
+\begin{frame}{Одномерный случай - формулировка адвекции\cite{smolar:mpdata-1d}}
+
+\begin{enumerate}
+  \item $ \frac{\partial \Psi}{\partial t} + \frac{\partial (\Psi \cdot \upsilon)}{\partial x} = 0 $, где $\Psi$ - концентрация, $\upsilon$ - скорость ветра
+  \item $ \Psi^{n+1}_i = \Psi^{n}_i + [\overbrace{F(\Psi^{n}_{i-1}, \Psi^{n}_{i}, U^{n+1/2}_{i-1/2})}^\text{входной поток} - \overbrace{F(\Psi^{n}_{i}, \Psi^{n}_{i+1}, U^{n+1/2}_{i+1/2})}^\text{выходной поток}] $
+  \item $F(\Psi_L, \Psi_R, U)=0.5\cdot(U+|U|)\cdot \Psi_L + 0.5\cdot(U-|U|)\cdot \Psi_R$, где $U=\upsilon \cdot \frac{\Delta t}{\Delta x}$
+  \item $\underset{i, n}{\max}|\upsilon_{i\pm1/2}|\cdot \frac{\Delta t}{\Delta x}\leqslant1$ - условие стабильности схемы
+  \item $O(\Delta x)$ - недостаточно для практических применений
+\end{enumerate}
+
+\end{frame}
+
+
+
+\begin{frame}{Одномерный случай - MPDATA\cite{smolar:mpdata-1d}}
+
+\begin{enumerate}
+  \item $ \frac{\partial \Psi_{i}^{n}}{\partial t} + \frac{\partial (\Psi_{i}^{n} \cdot \upsilon)}{\partial x} = \frac{\partial [\frac{1}{2}\cdot(|\upsilon|\cdot \Delta x - \upsilon^2\cdot \Delta t)\cdot \frac{\partial \Psi_{i}^{n}}{\partial x}]}{\partial x}  $ вместо
+      $ \frac{\partial \Psi_{i}^{n}}{\partial t} + \frac{\partial (\Psi_{i}^{n} \cdot \upsilon)}{\partial x} = 0$
+  \item $ \frac{\partial \Psi}{\partial t} + \frac{\partial (\Psi \cdot \upsilon)}{\partial x} = \frac{\partial (K\cdot \frac{\partial \Psi}{\partial x})}{\partial x} $ где $K=\frac{1}{2}\cdot(|\upsilon|\cdot \Delta x - \Delta t \cdot \upsilon^2)$ - коэффициент диффузии
+  \item $ \frac{\partial \Psi}{\partial t} -  \frac{\partial (K\cdot \frac{\partial \Psi}{\partial x})}{\partial x} = 0$ - "скрытое" уравнение адвекции
+  \item $ \frac{\partial \Psi}{\partial t} +  \frac{\partial (\Psi \cdot \upsilon_{diff})}{\partial x} = 0$ где $\upsilon_{diff}=-\frac{K}{\Psi}\cdot \frac{\partial \Psi}{\partial x}$
+  \item $u_{antidiff} = -u_{diff}$ - "проигрыш" диффузии назад во времени 
+  \item $ \Psi^{*}_i = \Psi^{n}_i + [F(\Psi^{n}_{i-1}, \Psi^{n}_{i}, U^{n+1/2}_{i-1/2}) - F(\Psi^{n}_{i}, \Psi^{n}_{i+1}, U^{n+1/2}_{i+1/2})] $
+  \item $ \Psi^{n+1}_i = \Psi^{*}_i + [F(\Psi^{*}_{i-1}, \Psi^{*}_{i}, \upsilon^{antidiff}_{i-1/2}) - F(\Psi^{*}_{i}, \Psi^{*}_{i+1}, \upsilon^{antidiff}_{i+1/2})] $ где $\upsilon_{i+1/2}^{antidiff}=\frac{(|\upsilon_{i+1/2}|\cdot \Delta x - \Delta t\cdot \upsilon^{2}_{i+1/2})\cdot(\Psi^{*}_{i+1}-\Psi^{*}_{i})}{(\Psi^{*}_{i}+\Psi^{*}_{i+1}+\epsilon)\cdot \Delta x}$
+  \item $O(\Delta x^2)$ - достаточно для практических применений
+\end{enumerate}
+
+\end{frame}
+

@@ -1,0 +1,52 @@
+\begin{frame}{GPGPU - Кластер из мультипроцессоров\cite{web:rwgpu}}
+
+\begin{itemize}
+  \item Асинхронные вычислительные мультипроцессоры
+  \item Общая многопортовая память
+  \item Конвейеры текстурной памяти
+\end{itemize}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[height=2in, width=3in]{artwork/images/board}
+\label{fig:board}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Мультипроцессор GT 200\cite{web:rwgpu}}
+\begin{itemize}
+  \item WARP и \_\_syncthreads()
+  \item Треугольник "регистры - разделяемая память - потоки"
+  \item Специфичные оптимизации по паттернам доступа к памяти
+\end{itemize}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[height=2in, width=3in]{artwork/images/SM}
+\label{fig:sm}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Dual Issue\cite{web:rwgpu}}
+\begin{itemize}
+  \item Двойное опережение
+  \item Зависимости между 64-bit fpu и 32-bit fpu
+\end{itemize}
+
+
+
+\begin{figure}
+\centering
+\includegraphics[height=2in, width=3in]{artwork/images/dual_issue}
+\label{fig:dual_issue}
+\end{figure}
+
+\end{frame}
+

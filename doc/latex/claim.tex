@@ -1,0 +1,79 @@
+\documentclass[10pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{beamerthemesplit}
+\usepackage{amsmath,amssymb,amsfonts,amsthm,mathtext}
+\usepackage{graphicx,psfrag} %only include if using pictures with psfrag
+
+\usetheme{Warsaw}
+\usecolortheme{Marcusmae}
+
+\title[Схема переноса MPDATA]{Масштабируемая массивно-параллельная реализация схемы переноса примесей MPDATA на распределенных GPU/SMP системах}
+\author{Левченко Олег --  Петров Артем -- Микушин Дмитрий}
+\institute{Геофизический Центр РАН -- СибНИГМИ РАН -- ИВМ РАН}
+\date{октябрь, 2010}
+
+
+
+\begin{document}
+
+\setbeamertemplate{title page}[default][rounded=true,shadow=false]
+\setbeamertemplate{background canvas}{\includegraphics[height=\paperheight]{artwork/images/front}}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\setbeamertemplate{background canvas}{}
+
+\begin{frame}{План}
+\begin{itemize}
+\item[•] Физическая задача
+\item[•] Выбор численного метода
+\item[•] Численная схема MPDATA
+\item[•] Проект параллельной реализации MPDATA для гибридных суперкомпьютеров
+\begin{itemize}
+\item[o] Общая схема вычислений
+\item[o] Архитектура GPU GT200
+\item[o] Анализ реализации для GPU
+\item[o] Метод декомпозиции прямоугольной сетки
+\end{itemize}
+\item[•] Заключение
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Перенос примеси как физическая задача}
+\begin{picture}(0.0,0.0)
+\put(-20,-55){\includegraphics[height=2.7cm]{artwork/images/moscow}}
+\end{picture}
+\begin{picture}(0.0,0.0)
+\put(43,-55){\includegraphics[height=2.7cm]{artwork/pdf/dust}}
+\end{picture}
+\begin{picture}(0.0,0.0)
+\put(165,-55){\includegraphics[height=2.7cm]{artwork/images/salt}}
+\end{picture}
+
+\vskip 78pt
+\begin{itemize}
+\item[•]Тип источника (точечный, распределённый)
+\item[•]Тип аэрозоля (пепел, песок, соль, ...)
+\item[•]Распределение размеров частиц (мониторинг концентрации опасной мелкодисперсной пыли)
+\item[•]Динамика: эмиссия (+ сальтация), перенос (+ химические процессы), осаждение
+\end{itemize}
+\end{frame}
+
+\input{overview}
+\input{inference}
+%\input{general_case}
+\input{program_structure}
+\input{cuda}
+\input{cuda_optimization}
+\input{array3d_slicing}
+\input{final}
+
+
+\bibliographystyle{abbrv}
+\bibliography{library}
+
+\end{document}
+
