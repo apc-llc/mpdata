@@ -59,7 +59,7 @@ See the resulting [video](http://youtu.be/PT01Ygx-uTA).
 ### Testing `ring3d` on Linux
 
 ```
-$ export PATH=$PATH:/opt/vapor
+$ source /opt/vapor/bin/vapor-setup.sh
 $ ./ring3d 128 128
 ```
 
