@@ -59,7 +59,7 @@ struct test_config_t* test_init(int n, int m, int* size /** OUT **/)
 	}
 	
 	// If third dimension is meaningful, assume the
-	// 3d flow is tested, and constant vertical speed.
+	// 3d flow is tested, and the vertical speed is constant (spiral).
 	if (m > 3)
 	{
 		for (int i = 0; i < n2 * m; i++)
