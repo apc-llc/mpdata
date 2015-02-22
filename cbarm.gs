@@ -1,138 +1,307 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  
-  
+*
+*  Script to plot a colorbar
+*
+*  The script will assume a colorbar is wanted even if there is 
+*  not room -- it will plot on the side or the bottom if there is
+*  room in either place, otherwise it will plot along the bottom and
+*  overlay labels there if any.  This can be dealt with via 
+*  the 'set parea' command. 
+*
+*	- option to draw extreme colors as triangles
+*	- the colors are boxed in white
+*	- input arguments in during a run execution:
+* 
+*	cbarm sf vert tri
+*
+*	sf   - scale the whole bar 1.0 = original 0.5 half the size, etc.
+*	vert - 0 FORCES a horizontal bar = 1 a vertical bar
+*       tri  - draw extreme colors as triangles (default is rectangles)
+*  
 
-  
+function colorbar (args)
+
+* parse arguments
+sf = subwrd(args,1)
+vert = subwrd(args,2)
+tri = subwrd(args,3)
+
+* set defaults
+if (sf=''); sf=1.0; endif
+if (tri=''); tri=0; endif
+
+* Check shading information
+'query shades'
+shdinfo = result
+if (subwrd(shdinfo,1)='None') 
+  say 'Cannot plot color bar: No shading information'
+  return
+endif
+
+* Get plot size info
+'query gxinfo'
+rec2 = sublin(result,2)
+rec3 = sublin(result,3)
+rec4 = sublin(result,4)
+* page size
+pagex = subwrd(rec2,4)
+pagey = subwrd(rec2,6)
+* width of plot area
+xmin = subwrd(rec3,4)
+xmax = subwrd(rec3,6)
+xsiz = xmax-xmin
+* x midpoint of plot
+gxmid = xsiz/2 + xmin   
+* width and midpoint of area between right edge of plot and end of page
+xd = pagex - xmax
+xmid = xd/2 + xmax  
+* height of plot area
+ymin = subwrd(rec4,4)
+ymax = subwrd(rec4,6)
+ysiz = ymax-ymin
+* y midpoint of plot
+gymid = ysiz/2 + ymin
+* midpoint of area between right edge of plot and end of page
+ymid = ymin/2
 
 
-  
+ylolim=0.6*sf
+xdlim1=1.0*sf
+xdlim2=1.5*sf  
+*barsf=0.8*sf
+barsf=sf
+yoffset=0.2*sf
+stroff=0.05*sf
+strxsiz=0.09*sf
+strysiz=0.11*sf
+bdrthk=1  ;* border thickness
 
-  <head>
-    <title>
-      /cbarm.gs – breeze2d
-    </title>
-        <link rel="search" href="/trac/breeze2d/search" />
-        <link rel="help" href="/trac/breeze2d/wiki/TracGuide" />
-        <link rel="alternate" href="/trac/breeze2d/export/86/cbarm.gs" type="text/plain" title="Original Format" />
-        <link rel="up" href="/trac/breeze2d/browser" title="Parent directory" />
-        <link rel="start" href="/trac/breeze2d/wiki" />
-        <link rel="stylesheet" href="/trac/breeze2d/chrome/common/css/trac.css" type="text/css" /><link rel="stylesheet" href="/trac/breeze2d/chrome/common/css/code.css" type="text/css" /><link rel="stylesheet" href="/trac/breeze2d/chrome/common/css/browser.css" type="text/css" />
-        <link rel="shortcut icon" href="/trac/breeze2d/chrome/common/trac.ico" type="image/x-icon" />
-        <link rel="icon" href="/trac/breeze2d/chrome/common/trac.ico" type="image/x-icon" />
-      <link type="application/opensearchdescription+xml" rel="search" href="/trac/breeze2d/search/opensearch" title="Search breeze2d" />
-    <script type="text/javascript" src="/trac/breeze2d/chrome/common/js/jquery.js"></script><script type="text/javascript" src="/trac/breeze2d/chrome/common/js/trac.js"></script><script type="text/javascript" src="/trac/breeze2d/chrome/common/js/search.js"></script>
-    <!--[if lt IE 7]>
-    <script type="text/javascript" src="/trac/breeze2d/chrome/common/js/ie_pre7_hacks.js"></script>
-    <![endif]-->
-    <script type="text/javascript">
-      jQuery(document).ready(function($) {
-        $(".trac-toggledeleted").show().click(function() {
-                  $(this).siblings().find(".trac-deleted").toggle();
-                  return false;
-        }).click();
-        $("#jumploc input").hide();
-        $("#jumploc select").change(function () {
-          this.parentNode.parentNode.submit();
-        });
-      });
-    </script>
-  </head>
-  <body>
-    <div id="banner">
-      <div id="header">
-        <a id="logo" href="/trac/breeze2d/wiki/TracIni#header_logo-section"><img src="/trac/breeze2d/chrome/site/your_project_logo.png" alt="(please configure the [header_logo] section in trac.ini)" /></a>
-      </div>
-      <form id="search" action="/trac/breeze2d/search" method="get">
-        <div>
-          <label for="proj-search">Search:</label>
-          <input type="text" id="proj-search" name="q" size="18" value="" />
-          <input type="submit" value="Search" />
-        </div>
-      </form>
-      <div id="metanav" class="nav">
-    <ul>
-      <li class="first"><a href="/trac/breeze2d/login">Login</a></li><li><a href="/trac/breeze2d/prefs">Preferences</a></li><li><a href="/trac/breeze2d/wiki/TracGuide">Help/Guide</a></li><li class="last"><a href="/trac/breeze2d/about">About Trac</a></li>
-    </ul>
-  </div>
-    </div>
-    <div id="mainnav" class="nav">
-    <ul>
-      <li class="first"><a href="/trac/breeze2d/wiki">Wiki</a></li><li><a href="/trac/breeze2d/timeline">Timeline</a></li><li><a href="/trac/breeze2d/roadmap">Roadmap</a></li><li class="active"><a href="/trac/breeze2d/browser">Browse Source</a></li><li><a href="/trac/breeze2d/report">View Tickets</a></li><li class="last"><a href="/trac/breeze2d/search">Search</a></li>
-    </ul>
-  </div>
-    <div id="main">
-      <div id="ctxtnav" class="nav">
-        <h2>Context Navigation</h2>
-          <ul>
-              <li class="first"><a href="/trac/breeze2d/changeset/4/cbarm.gs">Last Change</a></li><li><a href="/trac/breeze2d/browser/cbarm.gs?annotate=blame&amp;rev=4" title="Annotate each line with the last changed revision (this can be time consuming...)">Annotate</a></li><li class="last"><a href="/trac/breeze2d/log/cbarm.gs">Revision Log</a></li>
-          </ul>
-        <hr />
-      </div>
-    <div id="content" class="browser">
-      <h1>
-    <a class="pathentry first" title="Go to root directory" href="/trac/breeze2d/browser">root</a><span class="pathentry sep">/</span><a class="pathentry" title="View cbarm.gs" href="/trac/breeze2d/browser/cbarm.gs">cbarm.gs</a>
-    <br style="clear: both" />
-  </h1>
-      <div id="jumprev">
-        <form action="" method="get">
-          <div>
-            <label for="rev">
-              View revision:</label>
-            <input type="text" id="rev" name="rev" size="6" />
-          </div>
-        </form>
-      </div>
-      <table id="info" summary="Revision info">
-        <tr>
-          <th scope="col">
-            Revision <a href="/trac/breeze2d/changeset/4">4</a>, <span title="6994 bytes">6.8 KB</span>
-            (checked in by dmikushin, <a class="timeline" href="/trac/breeze2d/timeline?from=2011-02-10T13%3A35%3A33%2B0300&amp;precision=second" title="2011-02-10T13:35:33+0300 in Timeline">15 months</a> ago)
-          </th>
-        </tr>
-        <tr>
-          <td class="message searchable">
-              <p>
-Adding Poisson solver variants<br />
-</p>
-          </td>
-        </tr>
-      </table>
-      <div id="preview" class="searchable">
-    <table class="code"><thead><tr><th class="lineno" title="Line numbers">Line</th><th class="content"> </th></tr></thead><tbody><tr><th id="L1"><a href="#L1">1</a></th><td>*</td></tr><tr><th id="L2"><a href="#L2">2</a></th><td>*  Script to plot a colorbar</td></tr><tr><th id="L3"><a href="#L3">3</a></th><td>*</td></tr><tr><th id="L4"><a href="#L4">4</a></th><td>*  The script will assume a colorbar is wanted even if there is </td></tr><tr><th id="L5"><a href="#L5">5</a></th><td>*  not room -- it will plot on the side or the bottom if there is</td></tr><tr><th id="L6"><a href="#L6">6</a></th><td>*  room in either place, otherwise it will plot along the bottom and</td></tr><tr><th id="L7"><a href="#L7">7</a></th><td>*  overlay labels there if any.  This can be dealt with via </td></tr><tr><th id="L8"><a href="#L8">8</a></th><td>*  the 'set parea' command. </td></tr><tr><th id="L9"><a href="#L9">9</a></th><td>*</td></tr><tr><th id="L10"><a href="#L10">10</a></th><td>*       - option to draw extreme colors as triangles</td></tr><tr><th id="L11"><a href="#L11">11</a></th><td>*       - the colors are boxed in white</td></tr><tr><th id="L12"><a href="#L12">12</a></th><td>*       - input arguments in during a run execution:</td></tr><tr><th id="L13"><a href="#L13">13</a></th><td>* </td></tr><tr><th id="L14"><a href="#L14">14</a></th><td>*       cbarm sf vert tri</td></tr><tr><th id="L15"><a href="#L15">15</a></th><td>*</td></tr><tr><th id="L16"><a href="#L16">16</a></th><td>*       sf   - scale the whole bar 1.0 = original 0.5 half the size, etc.</td></tr><tr><th id="L17"><a href="#L17">17</a></th><td>*       vert - 0 FORCES a horizontal bar = 1 a vertical bar</td></tr><tr><th id="L18"><a href="#L18">18</a></th><td>*       tri  - draw extreme colors as triangles (default is rectangles)</td></tr><tr><th id="L19"><a href="#L19">19</a></th><td>*  </td></tr><tr><th id="L20"><a href="#L20">20</a></th><td></td></tr><tr><th id="L21"><a href="#L21">21</a></th><td>function colorbar (args)</td></tr><tr><th id="L22"><a href="#L22">22</a></th><td></td></tr><tr><th id="L23"><a href="#L23">23</a></th><td>* parse arguments</td></tr><tr><th id="L24"><a href="#L24">24</a></th><td>sf = subwrd(args,1)</td></tr><tr><th id="L25"><a href="#L25">25</a></th><td>vert = subwrd(args,2)</td></tr><tr><th id="L26"><a href="#L26">26</a></th><td>tri = subwrd(args,3)</td></tr><tr><th id="L27"><a href="#L27">27</a></th><td></td></tr><tr><th id="L28"><a href="#L28">28</a></th><td>* set defaults</td></tr><tr><th id="L29"><a href="#L29">29</a></th><td>if (sf=''); sf=1.0; endif</td></tr><tr><th id="L30"><a href="#L30">30</a></th><td>if (tri=''); tri=0; endif</td></tr><tr><th id="L31"><a href="#L31">31</a></th><td></td></tr><tr><th id="L32"><a href="#L32">32</a></th><td>* Check shading information</td></tr><tr><th id="L33"><a href="#L33">33</a></th><td>'query shades'</td></tr><tr><th id="L34"><a href="#L34">34</a></th><td>shdinfo = result</td></tr><tr><th id="L35"><a href="#L35">35</a></th><td>if (subwrd(shdinfo,1)='None') </td></tr><tr><th id="L36"><a href="#L36">36</a></th><td>  say 'Cannot plot color bar: No shading information'</td></tr><tr><th id="L37"><a href="#L37">37</a></th><td>  return</td></tr><tr><th id="L38"><a href="#L38">38</a></th><td>endif</td></tr><tr><th id="L39"><a href="#L39">39</a></th><td></td></tr><tr><th id="L40"><a href="#L40">40</a></th><td>* Get plot size info</td></tr><tr><th id="L41"><a href="#L41">41</a></th><td>'query gxinfo'</td></tr><tr><th id="L42"><a href="#L42">42</a></th><td>rec2 = sublin(result,2)</td></tr><tr><th id="L43"><a href="#L43">43</a></th><td>rec3 = sublin(result,3)</td></tr><tr><th id="L44"><a href="#L44">44</a></th><td>rec4 = sublin(result,4)</td></tr><tr><th id="L45"><a href="#L45">45</a></th><td>* page size</td></tr><tr><th id="L46"><a href="#L46">46</a></th><td>pagex = subwrd(rec2,4)</td></tr><tr><th id="L47"><a href="#L47">47</a></th><td>pagey = subwrd(rec2,6)</td></tr><tr><th id="L48"><a href="#L48">48</a></th><td>* width of plot area</td></tr><tr><th id="L49"><a href="#L49">49</a></th><td>xmin = subwrd(rec3,4)</td></tr><tr><th id="L50"><a href="#L50">50</a></th><td>xmax = subwrd(rec3,6)</td></tr><tr><th id="L51"><a href="#L51">51</a></th><td>xsiz = xmax-xmin</td></tr><tr><th id="L52"><a href="#L52">52</a></th><td>* x midpoint of plot</td></tr><tr><th id="L53"><a href="#L53">53</a></th><td>gxmid = xsiz/2 + xmin   </td></tr><tr><th id="L54"><a href="#L54">54</a></th><td>* width and midpoint of area between right edge of plot and end of page</td></tr><tr><th id="L55"><a href="#L55">55</a></th><td>xd = pagex - xmax</td></tr><tr><th id="L56"><a href="#L56">56</a></th><td>xmid = xd/2 + xmax  </td></tr><tr><th id="L57"><a href="#L57">57</a></th><td>* height of plot area</td></tr><tr><th id="L58"><a href="#L58">58</a></th><td>ymin = subwrd(rec4,4)</td></tr><tr><th id="L59"><a href="#L59">59</a></th><td>ymax = subwrd(rec4,6)</td></tr><tr><th id="L60"><a href="#L60">60</a></th><td>ysiz = ymax-ymin</td></tr><tr><th id="L61"><a href="#L61">61</a></th><td>* y midpoint of plot</td></tr><tr><th id="L62"><a href="#L62">62</a></th><td>gymid = ysiz/2 + ymin</td></tr><tr><th id="L63"><a href="#L63">63</a></th><td>* midpoint of area between right edge of plot and end of page</td></tr><tr><th id="L64"><a href="#L64">64</a></th><td>ymid = ymin/2</td></tr><tr><th id="L65"><a href="#L65">65</a></th><td></td></tr><tr><th id="L66"><a href="#L66">66</a></th><td></td></tr><tr><th id="L67"><a href="#L67">67</a></th><td>ylolim=0.6*sf</td></tr><tr><th id="L68"><a href="#L68">68</a></th><td>xdlim1=1.0*sf</td></tr><tr><th id="L69"><a href="#L69">69</a></th><td>xdlim2=1.5*sf  </td></tr><tr><th id="L70"><a href="#L70">70</a></th><td>*barsf=0.8*sf</td></tr><tr><th id="L71"><a href="#L71">71</a></th><td>barsf=sf</td></tr><tr><th id="L72"><a href="#L72">72</a></th><td>yoffset=0.2*sf</td></tr><tr><th id="L73"><a href="#L73">73</a></th><td>stroff=0.05*sf</td></tr><tr><th id="L74"><a href="#L74">74</a></th><td>strxsiz=0.09*sf</td></tr><tr><th id="L75"><a href="#L75">75</a></th><td>strysiz=0.11*sf</td></tr><tr><th id="L76"><a href="#L76">76</a></th><td>bdrthk=1  ;* border thickness</td></tr><tr><th id="L77"><a href="#L77">77</a></th><td></td></tr><tr><th id="L78"><a href="#L78">78</a></th><td>* Decide if horizontal or vertical color bar</td></tr><tr><th id="L79"><a href="#L79">79</a></th><td>if (ymin&lt;ylolim &amp; xd&lt;xdlim1) </td></tr><tr><th id="L80"><a href="#L80">80</a></th><td>  say "Not enough room in plot for a colorbar"</td></tr><tr><th id="L81"><a href="#L81">81</a></th><td>  return</td></tr><tr><th id="L82"><a href="#L82">82</a></th><td>endif</td></tr><tr><th id="L83"><a href="#L83">83</a></th><td></td></tr><tr><th id="L84"><a href="#L84">84</a></th><td>* logic for setting the bar orientation with user overides</td></tr><tr><th id="L85"><a href="#L85">85</a></th><td>if (ymin&lt;ylolim | xd&gt;xdlim1)       ;* there's room on the right side</td></tr><tr><th id="L86"><a href="#L86">86</a></th><td>  vchk = 1                         ;* default vertical colorbar</td></tr><tr><th id="L87"><a href="#L87">87</a></th><td>  if(vert = 0) ; vchk = 0 ; endif  ;* user override</td></tr><tr><th id="L88"><a href="#L88">88</a></th><td>else</td></tr><tr><th id="L89"><a href="#L89">89</a></th><td>  vchk = 0                         ;* default horizontal colorbar</td></tr><tr><th id="L90"><a href="#L90">90</a></th><td>  if(vert = 1) ; vchk = 1 ; endif  ;* user override</td></tr><tr><th id="L91"><a href="#L91">91</a></th><td>endif</td></tr><tr><th id="L92"><a href="#L92">92</a></th><td></td></tr><tr><th id="L93"><a href="#L93">93</a></th><td>* set up constants</td></tr><tr><th id="L94"><a href="#L94">94</a></th><td>'set strsiz 'strxsiz' 'strysiz</td></tr><tr><th id="L95"><a href="#L95">95</a></th><td>cnum = subwrd(shdinfo,5)</td></tr><tr><th id="L96"><a href="#L96">96</a></th><td>* vertical bar</td></tr><tr><th id="L97"><a href="#L97">97</a></th><td>if (vchk = 1 )        </td></tr><tr><th id="L98"><a href="#L98">98</a></th><td>  xwid = 0.25*sf</td></tr><tr><th id="L99"><a href="#L99">99</a></th><td>  ywid = 0.5*sf</td></tr><tr><th id="L100"><a href="#L100">100</a></th><td>  xl = xmid-xwid/2</td></tr><tr><th id="L101"><a href="#L101">101</a></th><td>  xr = xl + xwid</td></tr><tr><th id="L102"><a href="#L102">102</a></th><td>  if (ywid*cnum &gt; ysiz*barsf) </td></tr><tr><th id="L103"><a href="#L103">103</a></th><td>    ywid = ysiz*barsf/cnum</td></tr><tr><th id="L104"><a href="#L104">104</a></th><td>  endif</td></tr><tr><th id="L105"><a href="#L105">105</a></th><td>  yb = gymid - ywid*cnum/2</td></tr><tr><th id="L106"><a href="#L106">106</a></th><td>  'set string 1 l 1'</td></tr><tr><th id="L107"><a href="#L107">107</a></th><td>  vert = 1</td></tr><tr><th id="L108"><a href="#L108">108</a></th><td>else</td></tr><tr><th id="L109"><a href="#L109">109</a></th><td>* horizontal bar</td></tr><tr><th id="L110"><a href="#L110">110</a></th><td>  ywid = 0.4*sf</td></tr><tr><th id="L111"><a href="#L111">111</a></th><td>  xwid = 0.8*sf</td></tr><tr><th id="L112"><a href="#L112">112</a></th><td>  yt = ymid + yoffset</td></tr><tr><th id="L113"><a href="#L113">113</a></th><td>  yb = ymid</td></tr><tr><th id="L114"><a href="#L114">114</a></th><td>  if (xwid*cnum &gt; xsiz*barsf)</td></tr><tr><th id="L115"><a href="#L115">115</a></th><td>    xwid = xsiz*barsf/cnum</td></tr><tr><th id="L116"><a href="#L116">116</a></th><td>  endif</td></tr><tr><th id="L117"><a href="#L117">117</a></th><td>  xl = gxmid - xwid*cnum/2</td></tr><tr><th id="L118"><a href="#L118">118</a></th><td>  'set string 1 tc 1'</td></tr><tr><th id="L119"><a href="#L119">119</a></th><td>  vert = 0</td></tr><tr><th id="L120"><a href="#L120">120</a></th><td>endif</td></tr><tr><th id="L121"><a href="#L121">121</a></th><td>* save the initial values of yb and xl for later use</td></tr><tr><th id="L122"><a href="#L122">122</a></th><td>yb0=yb</td></tr><tr><th id="L123"><a href="#L123">123</a></th><td>xl0=xl</td></tr><tr><th id="L124"><a href="#L124">124</a></th><td></td></tr><tr><th id="L125"><a href="#L125">125</a></th><td>* Start plotting</td></tr><tr><th id="L126"><a href="#L126">126</a></th><td>num = 0</td></tr><tr><th id="L127"><a href="#L127">127</a></th><td>maxlen=0</td></tr><tr><th id="L128"><a href="#L128">128</a></th><td>while (num&lt; cnum) </td></tr><tr><th id="L129"><a href="#L129">129</a></th><td>  rec = sublin(shdinfo,num+2)</td></tr><tr><th id="L130"><a href="#L130">130</a></th><td>  col = subwrd(rec,1)</td></tr><tr><th id="L131"><a href="#L131">131</a></th><td>  hi  = subwrd(rec,3)</td></tr><tr><th id="L132"><a href="#L132">132</a></th><td>  len = math_strlen(hi)</td></tr><tr><th id="L133"><a href="#L133">133</a></th><td>  if (len&gt;maxlen); maxlen=len; endif</td></tr><tr><th id="L134"><a href="#L134">134</a></th><td>  if (vert) </td></tr><tr><th id="L135"><a href="#L135">135</a></th><td>    yt = yb + ywid</td></tr><tr><th id="L136"><a href="#L136">136</a></th><td>  else </td></tr><tr><th id="L137"><a href="#L137">137</a></th><td>    xr = xl + xwid</td></tr><tr><th id="L138"><a href="#L138">138</a></th><td>  endif</td></tr><tr><th id="L139"><a href="#L139">139</a></th><td>* save the corner locations for drawing a border</td></tr><tr><th id="L140"><a href="#L140">140</a></th><td>  if (num=0); blcorner=''xl' 'yb; endif</td></tr><tr><th id="L141"><a href="#L141">141</a></th><td>  if (num=cnum-1); trcorner=''xr' 'yt; endif</td></tr><tr><th id="L142"><a href="#L142">142</a></th><td>* save the edge locations for drawing a border with triangles </td></tr><tr><th id="L143"><a href="#L143">143</a></th><td>  if (tri=1)</td></tr><tr><th id="L144"><a href="#L144">144</a></th><td>    if (num=1)      ;* bottom/left edge points</td></tr><tr><th id="L145"><a href="#L145">145</a></th><td>      if (vert=1)</td></tr><tr><th id="L146"><a href="#L146">146</a></th><td>        ledgex1=xl; ledgey1=yb</td></tr><tr><th id="L147"><a href="#L147">147</a></th><td>        redgex1=xr; redgey1=yb</td></tr><tr><th id="L148"><a href="#L148">148</a></th><td>      else</td></tr><tr><th id="L149"><a href="#L149">149</a></th><td>        tedgex1=xl; tedgey1=yt</td></tr><tr><th id="L150"><a href="#L150">150</a></th><td>        bedgex1=xl; bedgey1=yb</td></tr><tr><th id="L151"><a href="#L151">151</a></th><td>      endif</td></tr><tr><th id="L152"><a href="#L152">152</a></th><td>    endif</td></tr><tr><th id="L153"><a href="#L153">153</a></th><td>    if (num=cnum-1) ;* top/right edge points</td></tr><tr><th id="L154"><a href="#L154">154</a></th><td>      if (vert=1)</td></tr><tr><th id="L155"><a href="#L155">155</a></th><td>        ledgex2=xl; ledgey2=yb</td></tr><tr><th id="L156"><a href="#L156">156</a></th><td>        redgex2=xr; redgey2=yb</td></tr><tr><th id="L157"><a href="#L157">157</a></th><td>      else</td></tr><tr><th id="L158"><a href="#L158">158</a></th><td>        tedgex2=xl; tedgey2=yt</td></tr><tr><th id="L159"><a href="#L159">159</a></th><td>        bedgex2=xl; bedgey2=yb</td></tr><tr><th id="L160"><a href="#L160">160</a></th><td>      endif</td></tr><tr><th id="L161"><a href="#L161">161</a></th><td>    endif</td></tr><tr><th id="L162"><a href="#L162">162</a></th><td>  endif</td></tr><tr><th id="L163"><a href="#L163">163</a></th><td></td></tr><tr><th id="L164"><a href="#L164">164</a></th><td>* draw the filled color polygon (triangle or rectangle)</td></tr><tr><th id="L165"><a href="#L165">165</a></th><td>  if (num=0)</td></tr><tr><th id="L166"><a href="#L166">166</a></th><td>   if (tri=1)</td></tr><tr><th id="L167"><a href="#L167">167</a></th><td>    if (vert=1)</td></tr><tr><th id="L168"><a href="#L168">168</a></th><td>*     bottom triangle    </td></tr><tr><th id="L169"><a href="#L169">169</a></th><td>      xm = (xl+xr)*0.5</td></tr><tr><th id="L170"><a href="#L170">170</a></th><td>      'set line 'col</td></tr><tr><th id="L171"><a href="#L171">171</a></th><td>      'draw polyf 'xl' 'yt' 'xm' 'yb' 'xr' 'yt' 'xl' 'yt</td></tr><tr><th id="L172"><a href="#L172">172</a></th><td>      'set line 1 1 'bdrthk</td></tr><tr><th id="L173"><a href="#L173">173</a></th><td>      'draw line 'xl' 'yt' 'xm' 'yb</td></tr><tr><th id="L174"><a href="#L174">174</a></th><td>      'draw line 'xm' 'yb' 'xr' 'yt</td></tr><tr><th id="L175"><a href="#L175">175</a></th><td>    else</td></tr><tr><th id="L176"><a href="#L176">176</a></th><td>*     left triangle</td></tr><tr><th id="L177"><a href="#L177">177</a></th><td>      ym = (yb+yt)*0.5</td></tr><tr><th id="L178"><a href="#L178">178</a></th><td>      'set line 'col</td></tr><tr><th id="L179"><a href="#L179">179</a></th><td>      'draw polyf 'xl' 'ym' 'xr' 'yb' 'xr' 'yt' 'xl' 'ym</td></tr><tr><th id="L180"><a href="#L180">180</a></th><td>      'set line 1 1 'bdrthk</td></tr><tr><th id="L181"><a href="#L181">181</a></th><td>      'draw line 'xl' 'ym' 'xr' 'yb</td></tr><tr><th id="L182"><a href="#L182">182</a></th><td>      'draw line 'xr' 'yt' 'xl' 'ym</td></tr><tr><th id="L183"><a href="#L183">183</a></th><td>    endif</td></tr><tr><th id="L184"><a href="#L184">184</a></th><td>   else</td></tr><tr><th id="L185"><a href="#L185">185</a></th><td>    'set line 'col</td></tr><tr><th id="L186"><a href="#L186">186</a></th><td>    'draw recf 'xl' 'yb' 'xr' 'yt</td></tr><tr><th id="L187"><a href="#L187">187</a></th><td>   endif</td></tr><tr><th id="L188"><a href="#L188">188</a></th><td>  endif</td></tr><tr><th id="L189"><a href="#L189">189</a></th><td> </td></tr><tr><th id="L190"><a href="#L190">190</a></th><td>  if (num&gt;0 &amp; num&lt;cnum-1)</td></tr><tr><th id="L191"><a href="#L191">191</a></th><td>    'set line 'col</td></tr><tr><th id="L192"><a href="#L192">192</a></th><td>    'draw recf 'xl' 'yb' 'xr' 'yt</td></tr><tr><th id="L193"><a href="#L193">193</a></th><td>  endif</td></tr><tr><th id="L194"><a href="#L194">194</a></th><td></td></tr><tr><th id="L195"><a href="#L195">195</a></th><td>  if (num=cnum-1)</td></tr><tr><th id="L196"><a href="#L196">196</a></th><td>    if (tri=1)</td></tr><tr><th id="L197"><a href="#L197">197</a></th><td>      if (vert=1)</td></tr><tr><th id="L198"><a href="#L198">198</a></th><td>*       top triangle    </td></tr><tr><th id="L199"><a href="#L199">199</a></th><td>        xm = (xl+xr)*0.5</td></tr><tr><th id="L200"><a href="#L200">200</a></th><td>        'set line 'col</td></tr><tr><th id="L201"><a href="#L201">201</a></th><td>        'draw polyf 'xl' 'yb' 'xm' 'yt' 'xr' 'yb' 'xl' 'yb</td></tr><tr><th id="L202"><a href="#L202">202</a></th><td>        'set line 1 1 'bdrthk</td></tr><tr><th id="L203"><a href="#L203">203</a></th><td>        'draw line 'xl' 'yb' 'xm' 'yt</td></tr><tr><th id="L204"><a href="#L204">204</a></th><td>        'draw line 'xm' 'yt' 'xr' 'yb</td></tr><tr><th id="L205"><a href="#L205">205</a></th><td>      else</td></tr><tr><th id="L206"><a href="#L206">206</a></th><td>*       right triangle</td></tr><tr><th id="L207"><a href="#L207">207</a></th><td>        ym = (yb+yt)*0.5</td></tr><tr><th id="L208"><a href="#L208">208</a></th><td>        'set line 'col</td></tr><tr><th id="L209"><a href="#L209">209</a></th><td>        'draw polyf 'xr' 'ym' 'xl' 'yb' 'xl' 'yt' 'xr' 'ym</td></tr><tr><th id="L210"><a href="#L210">210</a></th><td>        'set line 1 1 5'</td></tr><tr><th id="L211"><a href="#L211">211</a></th><td>        'draw line 'xr' 'ym' 'xl' 'yb</td></tr><tr><th id="L212"><a href="#L212">212</a></th><td>        'draw line 'xl' 'yt' 'xr' 'ym</td></tr><tr><th id="L213"><a href="#L213">213</a></th><td>      endif</td></tr><tr><th id="L214"><a href="#L214">214</a></th><td>    else</td></tr><tr><th id="L215"><a href="#L215">215</a></th><td>      'set line 'col</td></tr><tr><th id="L216"><a href="#L216">216</a></th><td>      'draw recf 'xl' 'yb' 'xr' 'yt</td></tr><tr><th id="L217"><a href="#L217">217</a></th><td>    endif</td></tr><tr><th id="L218"><a href="#L218">218</a></th><td>  endif</td></tr><tr><th id="L219"><a href="#L219">219</a></th><td></td></tr><tr><th id="L220"><a href="#L220">220</a></th><td>* Reset variables for next loop execution</td></tr><tr><th id="L221"><a href="#L221">221</a></th><td>  if (vert) </td></tr><tr><th id="L222"><a href="#L222">222</a></th><td>    yb = yt</td></tr><tr><th id="L223"><a href="#L223">223</a></th><td>  else</td></tr><tr><th id="L224"><a href="#L224">224</a></th><td>    xl = xr</td></tr><tr><th id="L225"><a href="#L225">225</a></th><td>  endif</td></tr><tr><th id="L226"><a href="#L226">226</a></th><td>  num = num + 1</td></tr><tr><th id="L227"><a href="#L227">227</a></th><td>endwhile</td></tr><tr><th id="L228"><a href="#L228">228</a></th><td></td></tr><tr><th id="L229"><a href="#L229">229</a></th><td></td></tr><tr><th id="L230"><a href="#L230">230</a></th><td>* draw the border</td></tr><tr><th id="L231"><a href="#L231">231</a></th><td>'set line 1 1 'bdrthk</td></tr><tr><th id="L232"><a href="#L232">232</a></th><td>if (tri=1)</td></tr><tr><th id="L233"><a href="#L233">233</a></th><td>  if (vert=1)</td></tr><tr><th id="L234"><a href="#L234">234</a></th><td>    'draw line 'ledgex1' 'ledgey1' 'ledgex2' 'ledgey2</td></tr><tr><th id="L235"><a href="#L235">235</a></th><td>    'draw line 'redgex1' 'redgey1' 'redgex2' 'redgey2</td></tr><tr><th id="L236"><a href="#L236">236</a></th><td>  else</td></tr><tr><th id="L237"><a href="#L237">237</a></th><td>    'draw line 'tedgex1' 'tedgey1' 'tedgex2' 'tedgey2</td></tr><tr><th id="L238"><a href="#L238">238</a></th><td>    'draw line 'bedgex1' 'bedgey1' 'bedgex2' 'bedgey2</td></tr><tr><th id="L239"><a href="#L239">239</a></th><td>  endif</td></tr><tr><th id="L240"><a href="#L240">240</a></th><td>else</td></tr><tr><th id="L241"><a href="#L241">241</a></th><td>  'draw rec 'blcorner' 'trcorner</td></tr><tr><th id="L242"><a href="#L242">242</a></th><td>endif</td></tr><tr><th id="L243"><a href="#L243">243</a></th><td></td></tr><tr><th id="L244"><a href="#L244">244</a></th><td>* now the tic marks and number strings</td></tr><tr><th id="L245"><a href="#L245">245</a></th><td></td></tr><tr><th id="L246"><a href="#L246">246</a></th><td>* reset xl and yb </td></tr><tr><th id="L247"><a href="#L247">247</a></th><td>xl = subwrd(blcorner,1)</td></tr><tr><th id="L248"><a href="#L248">248</a></th><td>yb = subwrd(blcorner,2)</td></tr><tr><th id="L249"><a href="#L249">249</a></th><td></td></tr><tr><th id="L250"><a href="#L250">250</a></th><td>dist = 0</td></tr><tr><th id="L251"><a href="#L251">251</a></th><td>ticwid = 0.5</td></tr><tr><th id="L252"><a href="#L252">252</a></th><td>num = 0</td></tr><tr><th id="L253"><a href="#L253">253</a></th><td>while (num&lt;cnum-1) </td></tr><tr><th id="L254"><a href="#L254">254</a></th><td>  rec = sublin(shdinfo,num+2)</td></tr><tr><th id="L255"><a href="#L255">255</a></th><td>  col = subwrd(rec,1)</td></tr><tr><th id="L256"><a href="#L256">256</a></th><td>  hi = subwrd(rec,3)</td></tr><tr><th id="L257"><a href="#L257">257</a></th><td>  if (vert) </td></tr><tr><th id="L258"><a href="#L258">258</a></th><td>    yt = yb + ywid</td></tr><tr><th id="L259"><a href="#L259">259</a></th><td>    dist = dist + ywid</td></tr><tr><th id="L260"><a href="#L260">260</a></th><td>  else </td></tr><tr><th id="L261"><a href="#L261">261</a></th><td>    xr = xl + xwid</td></tr><tr><th id="L262"><a href="#L262">262</a></th><td>    dist = dist + xwid</td></tr><tr><th id="L263"><a href="#L263">263</a></th><td>  endif</td></tr><tr><th id="L264"><a href="#L264">264</a></th><td></td></tr><tr><th id="L265"><a href="#L265">265</a></th><td>* draw tic marks and numbers centered on boundaries of each segment of the color key</td></tr><tr><th id="L266"><a href="#L266">266</a></th><td>* make sure there will be room for the tic label, if not don't draw a tic or label</td></tr><tr><th id="L267"><a href="#L267">267</a></th><td></td></tr><tr><th id="L268"><a href="#L268">268</a></th><td>* length of tic marks is 20% of width of colorbar</td></tr><tr><th id="L269"><a href="#L269">269</a></th><td>  xdelt=(xr-xl)*0.2</td></tr><tr><th id="L270"><a href="#L270">270</a></th><td>  ydelt=(yt-yb)*0.2</td></tr><tr><th id="L271"><a href="#L271">271</a></th><td> </td></tr><tr><th id="L272"><a href="#L272">272</a></th><td>  if (vert)</td></tr><tr><th id="L273"><a href="#L273">273</a></th><td>*   distance between vertical tics is 4 times the height of the string size</td></tr><tr><th id="L274"><a href="#L274">274</a></th><td>    if (dist &gt; 4*strysiz) </td></tr><tr><th id="L275"><a href="#L275">275</a></th><td>      'draw line 'xl' 'yt' 'xl+xdelt' 'yt   ;* left tic</td></tr><tr><th id="L276"><a href="#L276">276</a></th><td>      'draw line 'xr-xdelt' 'yt' 'xr' 'yt   ;* right tic</td></tr><tr><th id="L277"><a href="#L277">277</a></th><td>      xp=xr+stroff</td></tr><tr><th id="L278"><a href="#L278">278</a></th><td>      'draw string 'xp' 'yt' 'hi</td></tr><tr><th id="L279"><a href="#L279">279</a></th><td>      dist=0</td></tr><tr><th id="L280"><a href="#L280">280</a></th><td>    endif</td></tr><tr><th id="L281"><a href="#L281">281</a></th><td>  else</td></tr><tr><th id="L282"><a href="#L282">282</a></th><td>*   distance between horizontal tics is 1.5 times the width of the widest label</td></tr><tr><th id="L283"><a href="#L283">283</a></th><td>    if (dist &gt; 1.5*maxlen*strxsiz) </td></tr><tr><th id="L284"><a href="#L284">284</a></th><td>      'draw line 'xr' 'yt' 'xr' 'yt-ydelt   ;* top tic</td></tr><tr><th id="L285"><a href="#L285">285</a></th><td>      'draw line 'xr' 'yb' 'xr' 'yb+ydelt   ;* bottom tic</td></tr><tr><th id="L286"><a href="#L286">286</a></th><td>      yp=yb-(yt-yb)/2</td></tr><tr><th id="L287"><a href="#L287">287</a></th><td>      'draw string 'xr' 'yp' 'hi</td></tr><tr><th id="L288"><a href="#L288">288</a></th><td>      dist=0</td></tr><tr><th id="L289"><a href="#L289">289</a></th><td>    endif</td></tr><tr><th id="L290"><a href="#L290">290</a></th><td>  endif</td></tr><tr><th id="L291"><a href="#L291">291</a></th><td></td></tr><tr><th id="L292"><a href="#L292">292</a></th><td>* Reset variables for next loop execution</td></tr><tr><th id="L293"><a href="#L293">293</a></th><td>  if (vert) </td></tr><tr><th id="L294"><a href="#L294">294</a></th><td>    yb = yt</td></tr><tr><th id="L295"><a href="#L295">295</a></th><td>  else</td></tr><tr><th id="L296"><a href="#L296">296</a></th><td>    xl = xr</td></tr><tr><th id="L297"><a href="#L297">297</a></th><td>  endif</td></tr><tr><th id="L298"><a href="#L298">298</a></th><td>  num = num + 1</td></tr><tr><th id="L299"><a href="#L299">299</a></th><td>endwhile</td></tr><tr><th id="L300"><a href="#L300">300</a></th><td></td></tr><tr><th id="L301"><a href="#L301">301</a></th><td></td></tr><tr><th id="L302"><a href="#L302">302</a></th><td></td></tr><tr><th id="L303"><a href="#L303">303</a></th><td></td></tr><tr><th id="L304"><a href="#L304">304</a></th><td></td></tr><tr><th id="L305"><a href="#L305">305</a></th><td></td></tr><tr><th id="L306"><a href="#L306">306</a></th><td></td></tr><tr><th id="L307"><a href="#L307">307</a></th><td>return</td></tr></tbody></table>
-      </div>
-      <div id="help">
-        <strong>Note:</strong> See <a href="/trac/breeze2d/wiki/TracBrowser">TracBrowser</a>
-        for help on using the browser.
-      </div>
-      <div id="anydiff">
-        <form action="/trac/breeze2d/diff" method="get">
-          <div class="buttons">
-            <input type="hidden" name="new_path" value="/cbarm.gs" />
-            <input type="hidden" name="old_path" value="/cbarm.gs" />
-            <input type="hidden" name="new_rev" />
-            <input type="hidden" name="old_rev" />
-            <input type="submit" value="View changes..." title="Select paths and revs for Diff" />
-          </div>
-        </form>
-      </div>
-    </div>
-    <div id="altlinks">
-      <h3>Download in other formats:</h3>
-      <ul>
-        <li class="last first">
-          <a rel="nofollow" href="/trac/breeze2d/export/86/cbarm.gs">Original Format</a>
-        </li>
-      </ul>
-    </div>
-    </div>
-    <div id="footer" lang="en" xml:lang="en"><hr />
-      <a id="tracpowered" href="http://trac.edgewall.org/"><img src="/trac/breeze2d/chrome/common/trac_logo_mini.png" height="30" width="107" alt="Trac Powered" /></a>
-      <p class="left">
-        Powered by <a href="/trac/breeze2d/about"><strong>Trac 0.11.7</strong></a><br />
-        By <a href="http://www.edgewall.org/">Edgewall Software</a>.
-      </p>
-      <p class="right">Visit the Trac open source project at<br /><a href="http://trac.edgewall.org/">http://trac.edgewall.org/</a></p>
-    </div>
-  </body>
-</html>
+* Decide if horizontal or vertical color bar
+if (ymin<ylolim & xd<xdlim1) 
+  say "Not enough room in plot for a colorbar"
+  return
+endif
+
+* logic for setting the bar orientation with user overides
+if (ymin<ylolim | xd>xdlim1)       ;* there's room on the right side
+  vchk = 1                         ;* default vertical colorbar
+  if(vert = 0) ; vchk = 0 ; endif  ;* user override
+else
+  vchk = 0                         ;* default horizontal colorbar
+  if(vert = 1) ; vchk = 1 ; endif  ;* user override
+endif
+
+* set up constants
+'set strsiz 'strxsiz' 'strysiz
+cnum = subwrd(shdinfo,5)
+* vertical bar
+if (vchk = 1 )        
+  xwid = 0.25*sf
+  ywid = 0.5*sf
+  xl = xmid-xwid/2
+  xr = xl + xwid
+  if (ywid*cnum > ysiz*barsf) 
+    ywid = ysiz*barsf/cnum
+  endif
+  yb = gymid - ywid*cnum/2
+  'set string 1 l 1'
+  vert = 1
+else
+* horizontal bar
+  ywid = 0.4*sf
+  xwid = 0.8*sf
+  yt = ymid + yoffset
+  yb = ymid
+  if (xwid*cnum > xsiz*barsf)
+    xwid = xsiz*barsf/cnum
+  endif
+  xl = gxmid - xwid*cnum/2
+  'set string 1 tc 1'
+  vert = 0
+endif
+* save the initial values of yb and xl for later use
+yb0=yb
+xl0=xl
+
+* Start plotting
+num = 0
+maxlen=0
+while (num< cnum) 
+  rec = sublin(shdinfo,num+2)
+  col = subwrd(rec,1)
+  hi  = subwrd(rec,3)
+  len = math_strlen(hi)
+  if (len>maxlen); maxlen=len; endif
+  if (vert) 
+    yt = yb + ywid
+  else 
+    xr = xl + xwid
+  endif
+* save the corner locations for drawing a border
+  if (num=0); blcorner=''xl' 'yb; endif
+  if (num=cnum-1); trcorner=''xr' 'yt; endif
+* save the edge locations for drawing a border with triangles 
+  if (tri=1)
+    if (num=1)      ;* bottom/left edge points
+      if (vert=1)
+        ledgex1=xl; ledgey1=yb
+        redgex1=xr; redgey1=yb
+      else
+        tedgex1=xl; tedgey1=yt
+        bedgex1=xl; bedgey1=yb
+      endif
+    endif
+    if (num=cnum-1) ;* top/right edge points
+      if (vert=1)
+        ledgex2=xl; ledgey2=yb
+        redgex2=xr; redgey2=yb
+      else
+        tedgex2=xl; tedgey2=yt
+        bedgex2=xl; bedgey2=yb
+      endif
+    endif
+  endif
+
+* draw the filled color polygon (triangle or rectangle)
+  if (num=0)
+   if (tri=1)
+    if (vert=1)
+*     bottom triangle    
+      xm = (xl+xr)*0.5
+      'set line 'col
+      'draw polyf 'xl' 'yt' 'xm' 'yb' 'xr' 'yt' 'xl' 'yt
+      'set line 1 1 'bdrthk
+      'draw line 'xl' 'yt' 'xm' 'yb
+      'draw line 'xm' 'yb' 'xr' 'yt
+    else
+*     left triangle
+      ym = (yb+yt)*0.5
+      'set line 'col
+      'draw polyf 'xl' 'ym' 'xr' 'yb' 'xr' 'yt' 'xl' 'ym
+      'set line 1 1 'bdrthk
+      'draw line 'xl' 'ym' 'xr' 'yb
+      'draw line 'xr' 'yt' 'xl' 'ym
+    endif
+   else
+    'set line 'col
+    'draw recf 'xl' 'yb' 'xr' 'yt
+   endif
+  endif
+ 
+  if (num>0 & num<cnum-1)
+    'set line 'col
+    'draw recf 'xl' 'yb' 'xr' 'yt
+  endif
+
+  if (num=cnum-1)
+    if (tri=1)
+      if (vert=1)
+*       top triangle    
+        xm = (xl+xr)*0.5
+        'set line 'col
+        'draw polyf 'xl' 'yb' 'xm' 'yt' 'xr' 'yb' 'xl' 'yb
+        'set line 1 1 'bdrthk
+        'draw line 'xl' 'yb' 'xm' 'yt
+        'draw line 'xm' 'yt' 'xr' 'yb
+      else
+*       right triangle
+        ym = (yb+yt)*0.5
+        'set line 'col
+        'draw polyf 'xr' 'ym' 'xl' 'yb' 'xl' 'yt' 'xr' 'ym
+        'set line 1 1 5'
+        'draw line 'xr' 'ym' 'xl' 'yb
+        'draw line 'xl' 'yt' 'xr' 'ym
+      endif
+    else
+      'set line 'col
+      'draw recf 'xl' 'yb' 'xr' 'yt
+    endif
+  endif
+
+* Reset variables for next loop execution
+  if (vert) 
+    yb = yt
+  else
+    xl = xr
+  endif
+  num = num + 1
+endwhile
+
+
+* draw the border
+'set line 1 1 'bdrthk
+if (tri=1)
+  if (vert=1)
+    'draw line 'ledgex1' 'ledgey1' 'ledgex2' 'ledgey2
+    'draw line 'redgex1' 'redgey1' 'redgex2' 'redgey2
+  else
+    'draw line 'tedgex1' 'tedgey1' 'tedgex2' 'tedgey2
+    'draw line 'bedgex1' 'bedgey1' 'bedgex2' 'bedgey2
+  endif
+else
+  'draw rec 'blcorner' 'trcorner
+endif
+
+* now the tic marks and number strings
+
+* reset xl and yb 
+xl = subwrd(blcorner,1)
+yb = subwrd(blcorner,2)
+
+dist = 0
+ticwid = 0.5
+num = 0
+while (num<cnum-1) 
+  rec = sublin(shdinfo,num+2)
+  col = subwrd(rec,1)
+  hi = subwrd(rec,3)
+  if (vert) 
+    yt = yb + ywid
+    dist = dist + ywid
+  else 
+    xr = xl + xwid
+    dist = dist + xwid
+  endif
+
+* draw tic marks and numbers centered on boundaries of each segment of the color key
+* make sure there will be room for the tic label, if not don't draw a tic or label
+
+* length of tic marks is 20% of width of colorbar
+  xdelt=(xr-xl)*0.2
+  ydelt=(yt-yb)*0.2
+ 
+  if (vert)
+*   distance between vertical tics is 4 times the height of the string size
+    if (dist > 4*strysiz) 
+      'draw line 'xl' 'yt' 'xl+xdelt' 'yt   ;* left tic
+      'draw line 'xr-xdelt' 'yt' 'xr' 'yt   ;* right tic
+      xp=xr+stroff
+      'draw string 'xp' 'yt' 'hi
+      dist=0
+    endif
+  else
+*   distance between horizontal tics is 1.5 times the width of the widest label
+    if (dist > 1.5*maxlen*strxsiz) 
+      'draw line 'xr' 'yt' 'xr' 'yt-ydelt   ;* top tic
+      'draw line 'xr' 'yb' 'xr' 'yb+ydelt   ;* bottom tic
+      yp=yb-(yt-yb)/2
+      'draw string 'xr' 'yp' 'hi
+      dist=0
+    endif
+  endif
+
+* Reset variables for next loop execution
+  if (vert) 
+    yb = yt
+  else
+    xl = xr
+  endif
+  num = num + 1
+endwhile
+
+
+
+
+
+
+
+return
