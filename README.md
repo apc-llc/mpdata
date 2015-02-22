@@ -1,4 +1,4 @@
-[![Modeling aerosol source behavior in 2D wind field](ring2d.png =300x)](http://youtu.be/PT01Ygx-uTA)
+[![Modeling aerosol source behavior in 2D wind field](ring2d.png)](http://youtu.be/PT01Ygx-uTA)
 
 ## MPDATA -- positive definite transport equation scheme by Piotr K. Smolarkiewicz and Len G. Margolin ([paper](https://www.rsmas.miami.edu/users/miskandarani/Courses/MPO662/Smolarkiewicz/MPDATAreview.JCP140.pdf))
 
