@@ -1,4 +1,4 @@
-## MPDATA -- positive definite transport equation scheme
+## MPDATA: positive definite transport equation solver
 
 [![Modeling aerosol source behavior in 2D wind field](ring2d.png)](http://youtu.be/PT01Ygx-uTA)
 
