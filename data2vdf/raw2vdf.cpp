@@ -22,6 +22,7 @@
 //			Vapor Data Collection
 //
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -514,8 +515,8 @@ extern "C" int raw2vdf(int argc, char **argv) {
 
     if (opt.debug) MyBase::SetDiagMsgFilePtr(stderr);
 
-	WaveletBlockIOBase	*wbwriter3D = NULL;
-	WaveCodecIO	*wcwriter = NULL;
+	std::unique_ptr<WaveletBlockIOBase> wbwriter3D;
+	std::unique_ptr<WaveCodecIO> wcwriter;
 	VDFIOBase *vdfio = NULL;
 
 	size_t min[3] = {opt.xregion.min, opt.yregion.min, opt.zregion.min};
@@ -544,16 +545,16 @@ extern "C" int raw2vdf(int argc, char **argv) {
 			max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
 			vtype == Metadata::VAR3D) {
 
-			wbwriter3D = new WaveletBlock3DBufWriter(metadata);
+			wbwriter3D.reset(new WaveletBlock3DBufWriter(metadata));
 		}
 		else {
-			wbwriter3D = new WaveletBlock3DRegionWriter(metadata);
+			wbwriter3D.reset(new WaveletBlock3DRegionWriter(metadata));
 		}
-		vdfio = wbwriter3D;
+		vdfio = wbwriter3D.get();
 	} 
 	else {
-		wcwriter = new WaveCodecIO(metadata, opt.nthreads);
-		vdfio = wcwriter;
+		wcwriter.reset(new WaveCodecIO(metadata, opt.nthreads));
+		vdfio = wcwriter.get();
 	}
 	if (vdfio->GetErrCode() != 0) {
 		exit(1);

@@ -11,9 +11,9 @@ add_definitions(-D_GNU_SOURCE)
 set(VAPOR_LIBS /opt/vapor/lib)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -O3 -mtune=native -std=c99 -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native -std=c++11 -fopenmp")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -std=c99 -fopenmp")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fopenmp")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++11 -fopenmp")
 
 LINK_DIRECTORIES(${VAPOR_LIBS})
 
