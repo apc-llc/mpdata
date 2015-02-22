@@ -10,10 +10,10 @@ add_definitions(-D_GNU_SOURCE)
 # Path where to search for VAPOR visualizer libraries
 set(VAPOR_LIBS /opt/vapor/lib)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -O3 -mtune=native -std=c99")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -std=c99")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -O3 -mtune=native -std=c99")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -std=c99")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
 LINK_DIRECTORIES(${VAPOR_LIBS})
 
