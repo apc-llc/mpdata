@@ -1,6 +1,6 @@
 ## MPDATA: positive definite transport equation solver
 
-[![Modeling aerosol source behavior in 3D wind field](ring3d.jpg)](http://youtu.be/PT01Ygx-uTA)
+[![Modeling aerosol source behavior in 3D wind field](ring3d.jpg)](http://youtu.be/I8vA65bzmWw)
 
 [![Modeling aerosol source behavior in 2D wind field](ring2d.png)](http://youtu.be/PT01Ygx-uTA)
 
@@ -71,5 +71,5 @@ Use VAPOR to make 3D visualization (Data -> Load a Dataset into Current Session 
 $ vaporgui
 ```
 
-Frames captured from VAPOR could be also rendered into a [movie](http://youtu.be/PT01Ygx-uTA)
+Frames captured from VAPOR could be also rendered into a [movie](http://youtu.be/I8vA65bzmWw)
 
