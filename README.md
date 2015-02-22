@@ -1,8 +1,8 @@
+## MPDATA -- positive definite transport equation scheme
+
 [![Modeling aerosol source behavior in 2D wind field](ring2d.png)](http://youtu.be/PT01Ygx-uTA)
 
-## MPDATA -- positive definite transport equation scheme by Piotr K. Smolarkiewicz and Len G. Margolin ([paper](https://www.rsmas.miami.edu/users/miskandarani/Courses/MPO662/Smolarkiewicz/MPDATAreview.JCP140.pdf))
-
-An independent implementation of MPDATA solver used in [EULAG model](http://www.mmm.ucar.edu/eulag/). Our method is designed with built-in grid decomposition for multithread/multiprocess parallelism. We develop CUDA kernels for calculating concentrations and pseudo-velocities on GPUs. The source code includes multiple simple physical test cases.
+An independent implementation of MPDATA solver by Piotr K. Smolarkiewicz and Len G. Margolin ([paper](https://www.rsmas.miami.edu/users/miskandarani/Courses/MPO662/Smolarkiewicz/MPDATAreview.JCP140.pdf)) used in [EULAG model](http://www.mmm.ucar.edu/eulag/). Our method is designed with built-in grid decomposition for multithread/multiprocess parallelism. We develop CUDA kernels for calculating concentrations and pseudo-velocities on GPUs. The source code includes multiple simple physical test cases.
 
 ### Prerequisites
 
