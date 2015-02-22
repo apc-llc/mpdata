@@ -519,8 +519,8 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	std::unique_ptr<WaveCodecIO> wcwriter;
 	VDFIOBase *vdfio = NULL;
 
-	size_t min[3] = {opt.xregion.min, opt.yregion.min, opt.zregion.min};
-	size_t max[3] = {opt.xregion.max, opt.yregion.max, opt.zregion.max};
+	int min[3] = {opt.xregion.min, opt.yregion.min, opt.zregion.min};
+	int max[3] = {opt.xregion.max, opt.yregion.max, opt.zregion.max};
 
 	// Determine if variable is 3D
 	//
