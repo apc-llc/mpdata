@@ -1,3 +1,5 @@
+[![Modeling aerosol source behavior in 2D wind field](ring2d.png)](http://youtu.be/PT01Ygx-uTA)
+
 ## MPDATA -- positive definite transport equation scheme by Piotr K. Smolarkiewicz and Len G. Margolin ([paper](https://www.rsmas.miami.edu/users/miskandarani/Courses/MPO662/Smolarkiewicz/MPDATAreview.JCP140.pdf))
 
 An independent implementation of MPDATA solver used in [EULAG model](http://www.mmm.ucar.edu/eulag/). Our method is designed with built-in grid decomposition for multithread/multiprocess parallelism. We develop CUDA kernels for calculating concentrations and pseudo-velocities on GPUs. The source code includes multiple simple physical test cases.
@@ -21,8 +23,6 @@ $ sudo apt-get install grads
 ```
 $ sudo apt-get install cmake
 ```
-
-[![Modeling aerosol source behavior in 3D wind field](http://img.youtube.com/vi/XN6F51QgGx4/1.jpg)](http://www.youtube.com/watch?v=XN6F51QgGx4)
 
 ### Building on Linux
 
@@ -51,6 +51,4 @@ $ sudo apt-get update
 $ sudo apt-get install ffmpeg
 $ ffmpeg -i ring2d_frames/step%04d.png -c:v libx264 -pix_fmt yuv420p ring2d.mp4
 ```
-
-[![Modeling aerosol source behavior in 3D wind field](http://img.youtube.com/vi/PT01Ygx-uTA/1.jpg)](http://youtu.be/PT01Ygx-uTA)
 
