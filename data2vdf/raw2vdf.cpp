@@ -587,6 +587,8 @@ extern "C" int raw2vdf(int argc, char **argv) {
 
 	timer = vdfio->GetTime() - t0;
 
+	fclose(fp);
+
 	if (! opt.quiet) {
 		const float *range = vdfio->GetDataRange();
 
