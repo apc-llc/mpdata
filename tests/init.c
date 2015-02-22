@@ -4,6 +4,7 @@
 #include "genringf2d.h"
 
 #include <malloc.h>
+#include <omp.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h> // mkdir
@@ -206,7 +207,6 @@ int vdfcreate(int argc, char* argv[]);
 void test_create_vapor_vdf(int n, int m, int nt, const char* name)
 {
 	// Prepare arguments for vdfcreate routine.
-	int argc = 8;
 	char* argv[] =
 	{
 		"vdfcreate",
@@ -215,6 +215,7 @@ void test_create_vapor_vdf(int n, int m, int nt, const char* name)
 		"-vars3d", "u:v:w:c",
 		"%s.vdf"
 	};
+	int argc = sizeof(argv) / sizeof(char*);
 	
 	char dims[20];
 	sprintf(dims, argv[2], n, n, m);
@@ -240,23 +241,35 @@ void test_write_vapor_vdf(int n, int m,
 	int it, const char* name,
 	real* u, real* v, real* w, real* c)
 {
-	int argc = 7;
 	char* margv[] =
 	{
 		"raw2vdf",
+		"-quiet",
+		"-nthreads", "%d",
 		"-ts", "%d",
 		"-varname", "",
 		"%s.vdf", "data.bin"
 	};
+	int argc = sizeof(margv) / sizeof(char*);
 	char* argv[argc];
 
+	char nthreads[10];
+	#pragma omp parallel
+	{
+		#pragma omp master
+		{
+			sprintf(nthreads, margv[3], omp_get_num_threads());
+		}
+	}
+	margv[3] = nthreads;
+
 	char ts[10];
-	sprintf(ts, margv[2], it);
-	margv[2] = ts;
+	sprintf(ts, margv[5], it);
+	margv[5] = ts;
 	
 	char filename[20];
-	sprintf(filename, margv[5], name);
-	margv[5] = filename;
+	sprintf(filename, margv[8], name);
+	margv[8] = filename;
 	
 	int n2mb = sizeof(real) * n * n * m;
 
@@ -266,7 +279,7 @@ void test_write_vapor_vdf(int n, int m,
 	fp = fopen("data.bin", "wb");
 	fwrite(u, 1, n2mb, fp);
 	fclose(fp);
-	margv[4] = "u";
+	margv[7] = "u";
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
@@ -276,7 +289,7 @@ void test_write_vapor_vdf(int n, int m,
 	fp = fopen("data.bin", "wb");
 	fwrite(v, 1, n2mb, fp);
 	fclose(fp);
-	margv[4] = "v";
+	margv[7] = "v";
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
@@ -286,7 +299,7 @@ void test_write_vapor_vdf(int n, int m,
 	fp = fopen("data.bin", "wb");
 	fwrite(w, 1, n2mb, fp);
 	fclose(fp);
-	margv[4] = "w";
+	margv[7] = "w";
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
@@ -296,7 +309,7 @@ void test_write_vapor_vdf(int n, int m,
 	fp = fopen("data.bin", "wb");
 	fwrite(c, 1, n2mb, fp);
 	fclose(fp);
-	margv[4] = "c";
+	margv[7] = "c";
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
