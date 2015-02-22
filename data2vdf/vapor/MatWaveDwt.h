@@ -10,8 +10,8 @@ namespace VAPoR {
 //! \class MatWaveDwt
 //! \brief Implements a single level wavelet filter
 //! \author John Clyne
-//! \version $Revision: 1.1 $
-//! \date    $Date: 2010/06/07 16:43:10 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The MatWaveDwt class provides single-level wavelet filters similar
 //! to those provided by the Matlab dwt and idwt functions. 1D, 2D, and 3D

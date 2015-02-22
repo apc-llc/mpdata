@@ -1,17 +1,14 @@
 //
-//      $Id: Metadata.h,v 1.38 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 
 #ifndef	_Metadata_h_
 #define	_Metadata_h_
 
-#include <stack>
-#include <expat.h>
-#include <vapor/MyBase.h>
-#include <vapor/common.h>
-#include <vapor/XmlNode.h>
-#include <vapor/ExpatParseMgr.h>
+#include <vector>
+#include "vapor/common.h"
+
 #ifdef WIN32
 #pragma warning(disable : 4251)
 #endif
@@ -30,8 +27,8 @@ namespace VAPoR {
 //! a particular data collection type
 //!
 //! \author John Clyne
-//! \version $Revision: 1.38 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //!
 class VDF_API Metadata {
@@ -48,6 +45,7 @@ public:
 	VAR3D, VAR2D_XY, VAR2D_XZ, VAR2D_YZ
  };
 
+ Metadata() {_deprecated_get_dim = false;}
  virtual ~Metadata() {};
 
  //! Get the native dimension of a volume
@@ -61,18 +59,6 @@ public:
  //!
  //
  virtual void   GetGridDim(size_t dim[3]) const = 0;
-
- //! Return the internal blocking factor used for data. 
- //!
- //! Returns the X,Y,Z coordinate dimensions of all internal data blocks 
- //! in grid (voxel) coordinates.  If the data are
- //! not blocked this method should return the same values as 
- //! GetDim().
- //!
- //! \retval bs  A three element vector containing the voxel dimension of
- //! a data block
- //
- virtual const size_t *GetBlockSize() const = 0;
 
  //! Return the internal blocking factor at a given refinement level
  //!
@@ -114,27 +100,66 @@ public:
  //!
  //! \retval cr A vector of one or more compression factors
  //
- virtual vector <size_t> GetCRatios() const {
-	vector <size_t> cr; cr.push_back(1); return(cr);
+ virtual std::vector <size_t> GetCRatios() const {
+	std::vector <size_t> cr; cr.push_back(1); return(cr);
  }
+
+ //! Return the coordinate system type. One of \b cartesian or \b spherical 
+ //! \retval type 
+ //! 
+ //
+ virtual std::string GetCoordSystemType() const { return("cartesian"); };
+
+ //! Return the grid type. One of \b regular, \b stretched, \b block_amr,
+ //! or \b spherical
+ //!
+ //! \retval type 
+ //! 
+ //
+ virtual std::string GetGridType() const { return("regular"); };
+
+ //! Return the X dimension coordinate array, if it exists
+ //!
+ //! \retval value An array of monotonically changing values specifying
+ //! the X coordinates, in a user-defined coordinate system, of each
+ //! YZ sample plane. An empty vector is returned if the coordinate
+ //! dimension array is not defined for the specified time step.
+ //! \sa GetGridType() 
+ //!
+ //
+ virtual std::vector<double> GetTSXCoords(size_t ts) const {
+	std::vector <double> empty; return(empty);
+ };
+ virtual std::vector<double> GetTSYCoords(size_t ts) const {
+	std::vector <double> empty; return(empty);
+ };
+ virtual std::vector<double> GetTSZCoords(size_t ts) const {
+	std::vector <double> empty; return(empty);
+ };
+
 
 
  //! Return the domain extents specified in user coordinates
  //!
- //! Variables in the data represented by spatial coordinates,  such as 
- //! velocity components, are expected to be expressed in the same units 
- //! the returned domain extents.
- //! For data sets with moving (time varying) domains, this method should
- //! return the global bounds of the entire time series.
+ //! Return the domain extents specified in user coordinates
+ //! for the indicated time step. Variables in the data have
+ //! spatial positions defined in a user coordinate system.
+ //! These positions may vary with time. This method returns 
+ //! min and max bounds, in user coordinates, of all variables
+ //! at a given time step. 
+ //! 
+ //! \param[in] ts A valid data set time step in the range from zero to
+ //! GetNumTimeSteps() - 1. If \p ts is out of range, GetExtents()
+ //! will return a reasonable default value.
  //!
  //! \retval extents A six-element array containing the min and max
  //! bounds of the data domain in user-defined coordinates. The first
  //! three elements specify the minimum X, Y, and Z bounds, respectively,
  //! the second three elements specify the maximum bounds.
  //!
- //! \sa GetTSExtents();
  //
- virtual vector<double> GetExtents() const = 0;
+ virtual std::vector<double> GetExtents(size_t ts = 0) const = 0;
+
 
  //! Return the number of time steps in the data collection
  //!
@@ -152,7 +177,7 @@ public:
  //! \retval value is a space-separated list of variable names
  //!
  //
- virtual vector <string> GetVariableNames() const;
+ virtual std::vector <std::string> GetVariableNames() const;
 
  //! Return the Proj4 map projection string.
  //!
@@ -161,39 +186,58 @@ public:
  //! string is returned.
  //!
  //
- virtual string GetMapProjection() const {string empty; return (empty); };
+ virtual std::string GetMapProjection() const {std::string empty; return (empty); };
 
  //! Return the names of the 3D variables in the collection 
  //!
- //! \retval value is a space-separated list of 3D variable names.
+ //! \retval value is a vector of 3D variable names.
  //! An emptry string is returned if no variables of this type are present
  //!
  //
- virtual vector <string> GetVariables3D() const = 0;
+ virtual std::vector <std::string> GetVariables3D() const = 0;
 
  //! Return the names of the 2D, XY variables in the collection 
  //!
- //! \retval value is a space-separated list of 2D XY variable names
+ //! \retval value is a vector of 2D XY variable names
  //! An emptry string is returned if no variables of this type are present
  //!
  //
- virtual vector <string> GetVariables2DXY() const = 0;
+ virtual std::vector <std::string> GetVariables2DXY() const = 0;
 
  //! Return the names of the 2D, XZ variables in the collection 
  //!
- //! \retval value is a space-separated list of 2D ZY variable names
+ //! \retval value is a vectort of 2D ZY variable names
  //! An emptry string is returned if no variables of this type are present
  //!
  //
- virtual vector <string> GetVariables2DXZ() const = 0;
+ virtual std::vector <std::string> GetVariables2DXZ() const = 0;
 
  //! Return the names of the 2D, YZ variables in the collection 
  //!
- //! \retval value is a space-separated list of 2D YZ variable names
+ //! \retval value is a vector of 2D YZ variable names
  //! An emptry string is returned if no variables of this type are present
  //!
  //
- virtual vector <string> GetVariables2DYZ() const = 0;
+ virtual std::vector <std::string> GetVariables2DYZ() const = 0;
+
+ //! Return the names of the coordinate variables.
+ //!
+ //! This method returns a three-element vector naming the 
+ //! X, Y, and Z coordinate variables, respectively. The special
+ //! name "NONE" indicates that a coordinate variable name does not exist
+ //! for a particular dimension.
+ //!
+ //! \note The existence of a coordinate variable name does not imply
+ //! the existence of the coordinate variable itself. 
+ //! 
+ //! \retval vector is three-element vector of coordinate variable names.
+ //!
+ //
+ virtual std::vector <std::string> GetCoordinateVariables() const {;
+	std::vector <std::string> v;
+	v.push_back("NONE"); v.push_back("NONE"); v.push_back("ELEVATION");
+	return(v);
+ }
 
 
  //! Return a three-element boolean array indicating if the X,Y,Z
@@ -202,14 +246,14 @@ public:
  //! \retval boolean-vector  
  //!
  //
- virtual vector<long> GetPeriodicBoundary() const = 0;
+ virtual std::vector<long> GetPeriodicBoundary() const = 0;
 
  //! Return a three-element integer array indicating the coordinate
  //! ordering permutation.
  //!
  //! \retval integer-vector  
  //!
- virtual vector<long> GetGridPermutation() const = 0;
+ virtual std::vector<long> GetGridPermutation() const = 0;
 
  //! Return the time for a time step
  //!
@@ -242,26 +286,8 @@ public:
  //! the valid range zero the empty string is returned.
  //!
  //
- virtual void GetTSUserTimeStamp(size_t ts, string &s) const = 0;
+ virtual void GetTSUserTimeStamp(size_t ts, std::string &s) const = 0;
 
- //! Return the domain extents specified in user coordinates
- //! for the indicated time step
- //!
- //! For data collections defined on moving (time varying) domains,
- //! this method returns the domain extents in user coordinates 
- //! for the indicated time step, \p ts.
- //!
- //! \param[in] ts A valid data set time step in the range from zero to
- //! GetNumTimeSteps() - 1.
- //!
- //! \retval extents A six-element array containing the min and max
- //! bounds of the data domain in user-defined coordinates. If \p ts
- //! is outside the valid range the value of GetExtents() is returned.
- //!
- //
- virtual vector<double> GetTSExtents(size_t ) const {
-	return(GetExtents());
- }
 
  //! Get the dimension of a volume
  //!
@@ -295,6 +321,23 @@ public:
  //
  virtual void   GetDimBlk(size_t bdim[3], int reflevel = 0) const; 
 
+ //! Return the value of the missing data value
+ //! 
+ //! This method returns the value of the missing data value 
+ //! the specified variable. If no missing data are present
+ //! the method returns false
+ //!
+ //! \param[in] varname A 3D or 2D variable name
+ //! \param[out] value The missing data value. Undefined if no missing
+ //! value is present.
+ //! 
+ //! \retval returns true if missing data are present
+ //
+ virtual bool GetMissingValue(std::string varname, float &value) const {
+	return(false); 
+ };
+
+
 
  //! Map integer voxel coordinates into integer block coordinates. 
  //! 
@@ -308,115 +351,16 @@ public:
  //! indicates the maximum refinment level defined.
  //!
  virtual void	MapVoxToBlk(const size_t vcoord[3], size_t bcoord[3], int reflevel = -1) const;
-		
 
- //! Map integer voxel coordinates to user-defined floating point coords.
- //!
- //! Map the integer coordinates of the specified voxel to floating
- //! point coordinates in a user defined space. The voxel coordinates,
- //! \p vcoord0 are specified relative to the refinement level
- //! indicated by \p reflevel for time step \p timestep.  
- //! The mapping is performed by using linear interpolation 
- //! The user-defined coordinate system is obtained
- //! from the Metadata structure passed to the class constructor.
- //! The user coordinates are returned in \p vcoord1.
- //! Results are undefined if vcoord is outside of the volume 
- //! boundary.
- //!
- //! \param[in] timestep Time step of the variable. If an invalid
- //! timestep is supplied the global domain extents are used. 
- //! \param[in] vcoord0 Coordinate of input voxel in integer (voxel)
- //! coordinates
- //! \param[out] vcoord1 Coordinate of transformed voxel in user-defined,
- //! floating point  coordinates
- //! \param[in] reflevel Refinement level of the variable. A value of -1
- //! indicates the maximum refinment level defined for the VDC. In fact,
- //! any invalid value is treated as the maximum refinement level
- //!
- //! \sa Metatdata::GetGridType(), Metadata::GetExtents(), 
- //! GetTSXCoords()
- //
- virtual void	MapVoxToUser(
+ virtual void   MapVoxToUser(
 	size_t timestep,
 	const size_t vcoord0[3], double vcoord1[3], int ref_level = 0
  ) const;
 
- //! Map floating point coordinates to integer voxel offsets.
- //!
- //! Map floating point coordinates, specified relative to a 
- //! user-defined coordinate system, to the closest integer voxel 
- //! coordinates for a voxel at a given refinement level. 
- //! The integer voxel coordinates, \p vcoord1, 
- //! returned are specified relative to the refinement level
- //! indicated by \p reflevel for time step, \p timestep.
- //! The mapping is performed by using linear interpolation 
- //! The user defined coordinate system is obtained
- //! from the Metadata structure passed to the class constructor.
- //! Results are undefined if \p vcoord0 is outside of the volume 
- //! boundary.
- //!
- //! If a user coordinate system is not defined for the specified
- //! time step, \p timestep, the global extents for the VDC will 
- //! be used.
- //!
- //! \param[in] timestep Time step of the variable  If an invalid
- //! timestep is supplied the global domain extents are used.
- //! \param[in] vcoord0 Coordinate of input point in floating point
- //! coordinates
- //! \param[out] vcoord1 Integer coordinates of closest voxel, at the 
- //! indicated refinement level, to the specified point.
- //! integer coordinates
- //! \param[in] reflevel Refinement level of the variable. A value of -1
- //! indicates the maximum refinment level defined for the VDC. In fact,
- //! any invalid value is treated as the maximum refinement level
- //!
- //! \sa Metatdata::GetGridType(), Metadata::GetExtents(), 
- //! GetTSXCoords()
- //
- virtual void	MapUserToVox(
-	size_t timestep,
-	const double vcoord0[3], size_t vcoord1[3], int reflevel = 0
+ void MapUserToVox(
+	size_t timestep, const double vcoord0[3], size_t vcoord1[3],
+	int reflevel
  ) const;
-
- //! Map floating point coordinates to integer block offsets.
- //!
- //! Map floating point coordinates, specified relative to a 
- //! user-defined coordinate system, to integer coordinates of the block
- //! containing the point at a given refinement level. 
- //! The integer voxel coordinates, \p vcoord1
- //! are specified relative to the refinement level
- //! indicated by \p reflevel for time step, \p timestep.
- //! The mapping is performed by using linear interpolation 
- //! The user defined coordinate system is obtained
- //! from the Metadata structure passed to the class constructor.
- //! The user coordinates are returned in \p vcoord1.
- //! Results are undefined if \p vcoord0 is outside of the volume 
- //! boundary.
- //!
- //! If a user coordinate system is not defined for the specified
- //! time step, \p timestep, the global extents for the VDC will 
- //! be used.
- //!
- //! \param[in] timestep Time step of the variable.  If an invalid
- //! timestep is supplied the global domain extents are used.
- //! \param[in] vcoord0 Coordinate of input point in floating point
- //! coordinates
- //! \param[out] vcoord1 Integer coordinates of block containing the point
- //! \param[in] reflevel Refinement level of the variable. A value of -1
- //! indicates the maximum refinment level defined for the VDC. In fact,
- //! any invalid value is treated as the maximum refinement level
- //!
- //! \sa Metatdata::GetGridType(), Metadata::GetExtents(), 
- //! GetTSXCoords()
- //
- virtual void	MapUserToBlk(
-	size_t timestep,
-	const double vcoord0[3], size_t bcoord0[3], int reflevel = 0
- ) const {
-	size_t v[3];
-	MapUserToVox(timestep, vcoord0, v, reflevel);
-	Metadata::MapVoxToBlk(v, bcoord0, reflevel);
- }
 
 
  //! Return the variable type for the indicated variable
@@ -427,7 +371,7 @@ public:
  //! \param[in] varname A 3D or 2D variable name
  //! \retval type The variable type. The constant VAR
  //
- virtual VarType_T GetVarType(const string &varname) const; 
+ virtual VarType_T GetVarType(const std::string &varname) const; 
 
  //! Return true if indicated region coordinates are valid
  //!
@@ -467,7 +411,21 @@ public:
 	const size_t min[3], const size_t max[3], int reflevel = 0
  ) const;
 
+ //!
+ //! Returns true if the named variable is a coordinate variable
+ //!
+ //! This method is a convenience function that returns true if
+ //! if the variable named by \p varname is a coordinate variable. A
+ //! variable is a coordinate variable if it is returned by
+ //! GetCoordinateVariables();
+ //!
+ //! \sa GetCoordinateVariables()
+ //
+ virtual bool IsCoordinateVariable(std::string varname) const;
 
+
+protected:
+ bool _deprecated_get_dim;
 };
 };
 

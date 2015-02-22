@@ -1,5 +1,5 @@
 //
-// $Id: GetAppPath.h,v 1.3 2011/07/05 22:09:02 clynejp Exp $
+// $Id$
 //
 #ifndef	_GetAppPath_h_
 #define	_GetAppPath_h_
@@ -8,7 +8,7 @@
 
 namespace VetsUtil {
 
-PARAMS_API std::string GetAppPath(
+COMMON_API std::string GetAppPath(
 	const string &app, const string &name, const vector <string> &paths);
 
 };

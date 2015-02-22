@@ -1,16 +1,11 @@
-//
-//      $Id: DataMgrWRF.h,v 1.3 2010/09/24 17:14:07 southwic Exp $
-//
-
-#ifndef	_DataMgrWRF_h_
-#define	_DataMgrWRF_h_
-
-
 #include <vector>
 #include <string>
-#include <vapor/LayeredIO.h>
-#include <vapor/WRFReader.h>
+#include <vapor/DCReaderWRF.h>
+#include <vapor/DataMgr.h>
 #include <vapor/common.h>
+
+#ifndef	_DataMgrWRF
+#define	_DataMgrWRF
 
 namespace VAPoR {
 
@@ -18,11 +13,11 @@ namespace VAPoR {
 //! \class DataMgrWRF
 //! \brief A cache based data reader
 //! \author John Clyne
-//! \version $Revision: 1.3 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //
-class VDF_API DataMgrWRF : public LayeredIO, WRFReader {
+class VDF_API DataMgrWRF : public DataMgr, DCReaderWRF {
 
 public:
 
@@ -31,13 +26,75 @@ public:
 	size_t mem_size
  );
 
- DataMgrWRF(
-	const MetadataWRF &metadata,
-	size_t mem_size
- );
+
+ virtual ~DataMgrWRF() {  }; 
+
+protected:
 
 
- virtual ~DataMgrWRF() { CloseVariableNative(); }; 
+ //
+ //	Metadata methods
+ //
+
+ virtual void   _GetDim(size_t dim[3], int ) const {
+	return(DCReaderWRF::GetGridDim(dim));
+ };
+
+ virtual void _GetBlockSize(size_t bs[3], int reflevel) const {
+	return(DCReaderWRF::GetGridDim(bs));
+ }
+
+ virtual int _GetNumTransforms() const {
+	return(0);
+ };
+
+ virtual string _GetGridType() const { 
+	return(DCReaderWRF::GetGridType());
+ }
+
+ virtual vector<double> _GetExtents(size_t ts) const {
+	return(DCReaderWRF::GetExtents(ts));
+ };
+
+ virtual long _GetNumTimeSteps() const {
+	return(DCReaderWRF::GetNumTimeSteps());
+ };
+
+ virtual string _GetMapProjection() const {
+	return(DCReaderWRF::GetMapProjection());
+ };
+
+ virtual vector <string> _GetVariables3D() const {
+	return(DCReaderWRF::GetVariables3D());
+ };
+
+ virtual vector <string> _GetVariables2DXY() const {
+	return(DCReaderWRF::GetVariables2DXY());
+ };
+
+ virtual vector <string> _GetVariables2DXZ() const {
+	return(DCReaderWRF::GetVariables2DXZ());
+ };
+
+ virtual vector <string> _GetVariables2DYZ() const {
+	return(DCReaderWRF::GetVariables2DYZ());
+ };
+
+ virtual vector<long> _GetPeriodicBoundary() const {
+	return(DCReaderWRF::GetPeriodicBoundary());
+ };
+
+ virtual vector<long> _GetGridPermutation() const {
+	return(DCReaderWRF::GetGridPermutation());
+ };
+
+ virtual double _GetTSUserTime(size_t ts) const {
+	return(DCReaderWRF::GetTSUserTime(ts));
+ };
+
+ virtual void _GetTSUserTimeStamp(size_t ts, string &s) const {
+    DCReaderWRF::GetTSUserTimeStamp(ts,s);
+ }
 
  virtual int _VariableExists(
 	size_t ts,
@@ -45,128 +102,44 @@ public:
 	int reflevel = 0,
 	int lod  = 0
  ) const {
-	return (WRFReader::VariableExists(ts,varname));
+	return (DCReaderWRF::VariableExists(ts,varname));
  };
 
- //
- //	Metadata methods
- //
 
- virtual const size_t *GetBlockSize() const {
-	return(WRFReader::GetBlockSize());
- }
-
- virtual void GetBlockSize(size_t bs[3], int reflevel) const {
-	WRFReader::GetBlockSize(bs, reflevel);
- }
-
- virtual int GetNumTransforms() const {
-	return(WRFReader::GetNumTransforms());
+ virtual int    _OpenVariableRead(
+    size_t timestep,
+    const char *varname,
+    int,
+    int
+ ) {
+	return(DCReaderWRF::OpenVariableRead(timestep, varname));
  };
 
- virtual vector<double> GetExtents() const {
-	return(WRFReader::GetExtents());
- };
-
- virtual long GetNumTimeSteps() const {
-	return(WRFReader::GetNumTimeSteps());
- };
-
- virtual vector <string> _GetVariables3D() const {
-	return(WRFReader::GetVariables3D());
- };
-
- virtual vector <string> _GetVariables2DXY() const {
-	return(WRFReader::GetVariables2DXY());
- };
- virtual vector <string> _GetVariables2DXZ() const {
-	return(WRFReader::GetVariables2DXZ());
- };
- virtual vector <string> _GetVariables2DYZ() const {
-	return(WRFReader::GetVariables2DYZ());
- };
-
- virtual vector<long> GetPeriodicBoundary() const {
-	return(WRFReader::GetPeriodicBoundary());
- };
-
- virtual vector<long> GetGridPermutation() const {
-	return(WRFReader::GetGridPermutation());
- };
-
- virtual double GetTSUserTime(size_t ts) const {
-	return(WRFReader::GetTSUserTime(ts));
- };
-
- virtual void GetTSUserTimeStamp(size_t ts, string &s) const {
-    WRFReader::GetTSUserTimeStamp(ts,s);
- }
-
- virtual vector<double> GetTSExtents(size_t ts) const {
-	return(WRFReader::GetTSExtents(ts));
- };
-
- virtual string GetMapProjection() const {
-	return(WRFReader::GetMapProjection());
- };
-
-	
-protected:
-
- virtual const float *GetDataRange() const {
+ virtual const float *_GetDataRange() const {
 	return(NULL);	// Not implemented. Let DataMgr figure it out
  }
- virtual int	OpenVariableReadNative(
-	size_t timestep,
-	const char *varname,
-	int,
-	int
+
+ virtual void _GetValidRegion(
+    size_t min[3], size_t max[3], int 
+ ) const {
+	size_t dim[3]; DCReaderWRF::GetGridDim(dim);
+	min[0] = min[1] = min[2] = 0;
+	max[0] = dim[0]-1; max[1] = dim[1]-1; max[2] = dim[2]-1;
+ };
+
+ virtual bool _GetMissingValue(string varname, float &value) const {
+    return(DCReaderWRF::GetMissingValue(varname, value));
+ };
+
+
+ virtual int    _BlockReadRegion(
+    const size_t *, const size_t *, float *region
  ) {
-	return(WRFReader::OpenVariableRead(
-		timestep, varname)
-	); 
+	return(DCReaderWRF::Read(region));
  };
 
- virtual int	CloseVariableNative() {
-	 return (WRFReader::CloseVariable());
- };
-
- virtual int    BlockReadRegionNative(
-    const size_t* /* bmin */, const size_t* /* bmax */,
-    float *region
- )  {
- 	return(WRFReader::ReadVariable(region)
-	);
- }; 
-
- virtual void GetValidRegionNative(
-    size_t min[3], size_t max[3], int reflevel
- ) const;
-
- virtual void   GetDimNative(size_t dim[3], int reflevel) const {
-	return(WRFReader::GetDim(dim, reflevel));
- };
-
- virtual void   GetDimBlkNative(size_t bdim[3], int reflevel) const {
-	return(WRFReader::GetDimBlk(bdim, reflevel));
- };
-
- virtual void   MapVoxToUserNative(
-    size_t timestep,
-    const size_t vcoord0[3], double vcoord1[3], int reflevel = 0
- ) const {
-	return(WRFReader::MapVoxToUser(
-		timestep, vcoord0, vcoord1, reflevel)
-	);
- };
-
- virtual void   MapUserToVoxNative(
-    size_t timestep,
-    const double vcoord0[3], size_t vcoord1[3], int reflevel = 0
- ) const {
-	return(WRFReader::MapUserToVox(
-		timestep, vcoord0, vcoord1, reflevel)
-	);
+ virtual int    _CloseVariable() {
+	return (DCReaderWRF::CloseVariable());
  };
 
 };

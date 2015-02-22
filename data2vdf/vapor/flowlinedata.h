@@ -201,7 +201,7 @@ class FLOW_API PathLineData : public FlowLineData {
 		}
 		//Get time associated with point in flow, 
 		//Doesn't check whether this is a valid point in the flow.
-		float getTimeInPath(int lineNum, int index){
+		float getTimeInPath(int index){
 			return (index/samplesPerTStep + startTimeStep);
 		}
 		// Convert timesteps to indices:

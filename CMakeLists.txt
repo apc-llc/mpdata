@@ -10,10 +10,10 @@ add_definitions(-D_GNU_SOURCE)
 # Path where to search for VAPOR visualizer libraries
 set(VAPOR_LIBS /opt/vapor/lib)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -O3 -mtune=native -std=c99")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native")
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -std=c99")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -O3 -mtune=native -std=c99 -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -O3 -mtune=native -fopenmp")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -std=c99 -fopenmp")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fopenmp")
 
 LINK_DIRECTORIES(${VAPOR_LIBS})
 
@@ -86,7 +86,7 @@ add_executable(ring2d
 
 target_link_libraries(ring2d
 	core data2vdf generators multigrid timing
-	vdf netcdf expat common proj)
+	vdf udunits2 netcdf expat common proj)
 
 add_executable(ring3d
 	tests/init.c
@@ -95,7 +95,7 @@ add_executable(ring3d
 
 target_link_libraries(ring3d
 	core data2vdf generators multigrid timing
-	vdf netcdf expat common proj)
+	vdf udunits2 netcdf expat common proj)
 
 configure_file(cbarm.gs cbarm.gs COPYONLY)
 

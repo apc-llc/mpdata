@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DRegionWriter.h,v 1.6 2010/08/18 22:13:24 clynejp Exp $
+//      $Id$
 //
 
 
@@ -15,8 +15,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DRegionWriter
 //! \brief A subregion write for VDC files
 //! \author John Clyne
-//! \version $Revision: 1.6 $
-//! \date    $Date: 2010/08/18 22:13:24 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an API for writing volume sub-regions  
 //! to a VDC
@@ -80,7 +80,8 @@ public:
  virtual int	OpenVariableWrite(
 	size_t timestep,
 	const char *varname,
-	int reflevel = -1
+	int reflevel = -1,
+	int lod = -1
  );
  virtual int OpenVariableRead(
 	size_t timestep,

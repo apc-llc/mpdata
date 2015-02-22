@@ -37,17 +37,11 @@ class PARAMS_API OpacityMapBase : public ParsedXml
     void  value(float val) { _value = val; }  // Normalized Coordinates
     float value()          { return _value; } // Normalized Coordinates
 
-    void                 type(TFInterpolator::type t) { _type = t; }
-    TFInterpolator::type type()                       { return _type; }
-
     void  select()   { _selected = true; }
     void  deselect() { _selected = false; }
     bool  selected() { return _selected; }
 	
-
   private:
-
-    TFInterpolator::type _type;
 
     float _value;   // Normalized coordinates
     float _opacity;
@@ -128,9 +122,11 @@ public:
   virtual bool elementStartHandler(ExpatParseMgr*, int, std::string&, 
                                    const char **attribs);
   virtual bool elementEndHandler(ExpatParseMgr*, int depth, std::string &tag);
+  void interpType(TFInterpolator::type t){_interpType = t;}
+  TFInterpolator::type interpType() {return _interpType;}
 
 protected:
-
+  TFInterpolator::type _interpType;
   int leftControlIndex(float val);
   static bool sortCriterion(ControlPoint *p1, ControlPoint *p2);
 

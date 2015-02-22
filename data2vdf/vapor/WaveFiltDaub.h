@@ -12,8 +12,8 @@ namespace VAPoR {
 //! \class WaveFiltDaub
 //! \brief Daubechies family FIR filters
 //! \author John Clyne
-//! \version $Revision: 1.1 $
-//! \date    $Date: 2010/06/07 16:43:10 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides FIR filters for the Daubechies family of wavelets
 //!

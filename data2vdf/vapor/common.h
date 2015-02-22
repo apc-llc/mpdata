@@ -31,6 +31,12 @@
 #define RENDER_API __declspec(dllimport)
 #endif
   
+#ifdef UDUNITS2_EXPORTS
+#define UDUNITS2_API __declspec(dllexport)
+#else
+#define UDUNITS2_API __declspec(dllimport)
+#endif
+
 #ifdef JPEG_EXPORTS
 //Slightly different definitions for jpeg project:
 #     define JPEG_GLOBAL(type) __declspec(dllexport) type

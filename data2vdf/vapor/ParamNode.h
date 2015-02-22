@@ -1,5 +1,5 @@
 //
-//      $Id: ParamNode.h,v 1.7.2.1 2011/12/22 20:29:19 alannorton Exp $
+//      $Id$
 //
 
 #ifndef	_ParamNode_h_
@@ -19,8 +19,8 @@ class ParamsBase;
 //! \class ParamNode  
 //! \brief An Xml tree
 //! \author John Clyne
-//! \version $Revision: 1.7.2.1 $
-//! \date    $Date: 2011/12/22 20:29:19 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class extends the XmlNode class, adding 
 //! support for dirty flags.  The XML hierarchy includes

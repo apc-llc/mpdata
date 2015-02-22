@@ -1,5 +1,5 @@
 //
-//      $Id: Version.h,v 1.32 2011/04/04 22:07:32 alannorton Exp $
+//      $Id$
 //
 //	WARNING: Version.h is generated automatically from Version.h.sed
 //
@@ -59,6 +59,10 @@ public:
  //
  static int GetMinorMinor() { return(_minorMinorVersion); }
 
+ //! Return the sub minor version number
+ //
+ static string GetRC() { return(""); }
+
  //! Return the canonical version number as a formatted string
  //!
  //! Return the canonical version number as a formatted string of
@@ -74,14 +78,22 @@ public:
  //! advanced.
  //
  static const string &GetDateString() {
-	_dateString.assign("$Date: 2011/04/04 22:07:32 $"); return(_dateString);
+	_dateString.assign("Mon Feb  3 16:05:26 MST 2014"); return(_dateString);
  }
+
+ //! Parse a version string into it's component major, minor,
+ //! and minorminor numbers
+ //
+ static void Parse(
+    std::string ver, int &major, int &minor, int &minorminor, string &rc
+ );
+
  static int Compare(int major, int minor, int minorminor) ;
  static int Compare(std::string ver1, std::string ver2);
 
 private:
  static const int _majorVersion = 2;
- static const int _minorVersion = 1;
+ static const int _minorVersion = 3;
  static const int _minorMinorVersion = 0;
  static string _formatString;
  static string _dateString;

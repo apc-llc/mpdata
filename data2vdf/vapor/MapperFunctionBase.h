@@ -191,8 +191,17 @@ public:
 
 	// Mapper function tag is public, visible to flowparams
 	static const string _mapperFunctionTag;
+	TFInterpolator::type colorInterpType() {
+		if (_colormap) return _colormap->interpType();
+		return TFInterpolator::linear;
+	}
+	void setColorInterpType(TFInterpolator::type t){
+		if (_colormap) _colormap->interpType(t);
+	}
 
 protected:
+
+	
     //
 	// Set to starting values
 	//
@@ -205,7 +214,6 @@ protected:
     CompositionType      _compType;
 
     ColorMapBase            *_colormap;
-
     //
     // XML tags
     //
@@ -226,7 +234,7 @@ protected:
 	static const string _opacityControlPointTag;
 	static const string _colorControlPointTag;
 	// Additional attributes not yet supported:
-	static const string _interpolatorAttr;
+	
 	static const string _rgbAttr;
 	
     //

@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DWriter.h,v 1.12 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 #ifndef	_WavletBlock3DWriter_h_
@@ -14,8 +14,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DWriter
 //! \brief A slab writer for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.12 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides a low-level API for writing data volumes to
 //! a VDF file. The Write methods contained within are the  most efficient
@@ -77,7 +77,8 @@ public:
  virtual int	OpenVariableWrite(
 	size_t timestep,
 	const char *varname,
-	int reflevel = -1
+	int reflevel = -1,
+	int lod = -1
  );
 
  virtual int OpenVariableRead(

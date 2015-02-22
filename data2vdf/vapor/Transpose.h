@@ -1,5 +1,5 @@
 //
-//      $Id: Transpose.h,v 1.3 2010/09/24 19:16:03 clynejp Exp $
+//      $Id$
 //
 
 

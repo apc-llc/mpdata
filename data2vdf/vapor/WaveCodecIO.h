@@ -1,5 +1,5 @@
 //
-// $Id: WaveCodecIO.h,v 1.10 2011/07/29 14:44:13 clynejp Exp $
+// $Id$
 //
 #ifndef	_WaveCodeIO_h_
 #define	_WaveCodeIO_h_
@@ -8,6 +8,7 @@
 #include <vapor/SignificanceMap.h>
 #include <vapor/Compressor.h>
 #include <vapor/EasyThreads.h>
+#include <vapor/NCBuf.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -19,8 +20,8 @@ namespace VAPoR {
 //! \class WaveCodecIO
 //! \brief A sub-region reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.10 $
-//! \date    $Date: 2011/07/29 14:44:13 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an API for reading and writing 
 //! VDC2 data. VDC2 data may be accessed with two forms of 
@@ -160,7 +161,7 @@ public:
  //! \sa OpenVariableRead(), GetBlockSize(), MapVoxToBlk()
  //
  virtual int BlockReadRegion(
-	const size_t bmin[3], const size_t bmax[3], float *region, int unblock=1
+	const size_t bmin[3], const size_t bmax[3], float *region, bool unblock=true
  );
 
  //! Read in and return a subregion from the currently opened 
@@ -189,6 +190,8 @@ public:
  virtual int ReadRegion(
 	const size_t min[3], const size_t max[3], float *region
  );
+
+ virtual int ReadRegion(float *region);
 
  //! Read the next volume slice from the currently opened file
  //!
@@ -239,7 +242,8 @@ public:
  //! \sa OpenVariableWrite() SetBoundarPadOnOff()
  //
  virtual int BlockWriteRegion(
-	const float *region, const size_t bmin[3], const size_t bmax[3], int block=1
+	const float *region, const size_t bmin[3], const size_t bmax[3], 
+	bool block=true
  );
 
  //! Write a volume subregion to the currently opened progressive
@@ -270,6 +274,10 @@ public:
  //!
  virtual int WriteRegion(
 	const float *region, const size_t min[3], const size_t max[3]
+ );
+
+ virtual int WriteRegion(
+	const float *region
  );
 
 
@@ -391,18 +399,23 @@ public:
  //
  virtual void GetBlockSize(size_t bs[3], int reflevel) const;
 #ifdef PARALLEL
- void SetIOComm(MPI_Comm NewIOComm) {std::cout << "WaveCodecIO::SetIOComm, nthreads = " << _nthreads << std::endl; IO_Comm = NewIOComm;};
- void SetCollectiveIO(bool newCollectiveIO) {std::cout << "WaveCodecIO::SetCollectiveIO, nthreads = " << _nthreads << std::endl; collectiveIO = newCollectiveIO;};
+ void SetIOComm(MPI_Comm NewIOComm) {_IO_Comm = NewIOComm;};
 #endif
+ void SetCollectiveIO(bool newCollectiveIO) {
+   _collectiveIO = newCollectiveIO;
+ };
  friend void     *RunBlockReadRegionThread(void *object);
  friend void     *RunBlockWriteRegionThread(void *object);
 
 private:
 #ifdef PARALLEL
- MPI_Comm IO_Comm;
- bool collectiveIO;
+ MPI_Comm _IO_Comm;
 #endif
-
+ bool _collectiveIO;
+ double _xformMPI;
+ double _methodTimer;
+ double _methodThreadTimer;
+ double _ioMPI;
  //
  // Threaded read object for parallel inverse transforms 
  // (data reconstruction)
@@ -418,7 +431,6 @@ private:
 		const size_t bdim_p[3],
 		const size_t dim_p[3],
 		const size_t bs_p[3],
-		const float dataRange[2],
 		bool reblock,
 		bool pad
 	);
@@ -448,10 +460,11 @@ private:
 public:
  int _nthreads; // num execution threads
  int getNumThread(){return _nthreads;}
+ void EnableBuffering(size_t count[3], size_t divisor, int rank);
 private:
-
  int _next_block;
  int _threadStatus;
+ size_t _NC_BUF_SIZE; //buffering disabled by default
  ReadWriteThreadObj **_rw_thread_objs;
  SignificanceMap **_sigmaps;
  vector <SignificanceMap **> _sigmapsThread;	// one set for each thread
@@ -466,6 +479,7 @@ private:
  vector <Compressor *> _compressorThread2DXZ;
  vector <Compressor *> _compressorThread2DYZ;
  vector <Compressor *> _compressorThread; // current compressor threads
+ vector <NCBuf *> _ncbufs;
 
  VarType_T _vtype;  // Type (2d, or 3d) of currently opened variable
  VarType_T _compressorType;  // Type (2d, or 3d) of current _compressor
@@ -490,7 +504,6 @@ private:
  float *_block;	// storage for a block
  vector <float *> _blockThread;
  float *_blockReg;	// more storage
- bool _firstWrite; // false after first block written;
  float _dataRange[2];
  vector <size_t> _ncoeffs; // num wave coeff. at each compression level
  vector <size_t> _cratios3D;	// 3D compression ratios

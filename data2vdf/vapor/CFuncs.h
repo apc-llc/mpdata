@@ -1,5 +1,5 @@
 //
-//      $Id: CFuncs.h,v 1.3 2011/07/12 20:55:23 clynejp Exp $
+//      $Id$
 //
 //************************************************************************
 //								*
@@ -35,7 +35,7 @@ namespace VetsUtil {
 
 
 COMMON_API const char	*Basename(const char *path);
-COMMON_API string Basename(string &path);
+COMMON_API string Basename(const string &path);
 
 
 //! Return the directory component of a UNIX path name
@@ -49,7 +49,7 @@ COMMON_API string Basename(string &path);
 //! \retval directory Returns \p directory parameter
 //!
 COMMON_API char   *Dirname(const char *pathname, char *directory);
-COMMON_API string Dirname(string &path);
+COMMON_API string Dirname(const string &path);
 
 
 };

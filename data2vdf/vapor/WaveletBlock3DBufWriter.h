@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DBufWriter.h,v 1.10 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 
@@ -7,6 +7,7 @@
 #define	_WavletBlock3DBufWriter_h_
 
 #include <vapor/WaveletBlock3DWriter.h>
+#include <vapor/WaveletBlock3DRegionWriter.h>
 
 namespace VAPoR {
 
@@ -14,8 +15,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DBufWriter
 //! \brief A slice-based reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.10 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an API for reading volumes
 //! from a VDF file one slice at a time.
@@ -76,7 +77,8 @@ public:
  virtual int	OpenVariableWrite(
 	size_t timestep,
 	const char *varname,
-	int reflevel = -1
+	int reflevel = -1,
+	int lod = -1
  );
 
  virtual int	CloseVariable();
@@ -115,6 +117,17 @@ private:
  int	is_open_c;
 
  void	_WaveletBlock3DBufWriter();
+
+ //
+ // Need this stuff to support writing 2D data. It's a hideous hack
+ //
+ int _OpenVariableWrite2D(size_t timestep, const char *varname, int reflevel);
+ int _CloseVariable2D();
+ int _WriteSlice2D(const float *slice);
+ WaveletBlock3DRegionWriter *_writer2D;
+ VarType_T _vartype;
+
+
 
 };
 

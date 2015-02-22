@@ -1,5 +1,5 @@
 //
-//      $Id: DataMgrFactory.h,v 1.2 2010/08/26 19:54:31 clynejp Exp $
+//      $Id$
 //
 
 #ifndef	_DataMgrFactory_h_

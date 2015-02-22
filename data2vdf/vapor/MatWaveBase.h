@@ -12,8 +12,8 @@ namespace VAPoR {
 //! \class MatWaveBase
 //! \brief A base class for a Matlab-like wavelet bank
 //! \author John Clyne
-//! \version $Revision: 1.1 $
-//! \date    $Date: 2010/06/07 16:43:10 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The MatWaveBase class is a base class for building Matlab-inspired
 //! wavelet filter banks. In many cases the methods provided behave

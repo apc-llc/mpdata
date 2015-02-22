@@ -1,5 +1,5 @@
 //
-// $Id: Compressor.h,v 1.3 2011/02/11 16:53:08 clynejp Exp $
+// $Id$
 //
 
 #ifndef	_Compressor_h_
@@ -15,8 +15,8 @@ namespace VAPoR {
 //! \class Compressor
 //! \brief A class for managing data set metadata
 //! \author John Clyne
-//! \version $Revision: 1.3 $
-//! \date    $Date: 2011/02/11 16:53:08 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //!
 //! This class performs either lossy compression 

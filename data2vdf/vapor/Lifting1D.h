@@ -1,5 +1,5 @@
 //
-//      $Id: Lifting1D.h,v 1.8 2010/02/11 18:10:38 alannorton Exp $
+//      $Id$
 //
 
 #ifndef	_Lifting1D_h_
@@ -17,8 +17,8 @@ namespace VAPoR {
 //! \class Lifting1D
 //! \brief Wrapper for Wim Swelden's Liftpack wavelet transform interface
 //! \author John Clyne
-//! \version $Revision: 1.8 $
-//! \date    $Date: 2010/02/11 18:10:38 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an interface to the Liftpack wavelet transformation
 //! library.
@@ -131,7 +131,7 @@ private:
 
 /*
  *  -*- Mode: ANSI C -*-
- *  $Id: Lifting1D.h,v 1.8 2010/02/11 18:10:38 alannorton Exp $
+ *  $Id$
  *  Author: Gabriel Fernandez, Senthil Periaswamy
  *
  *     >>> Fast Lifted Wavelet Transform on the Interval <<<
@@ -370,7 +370,7 @@ template <class Data_T> int Lifting1D<Data_T>::zero( const double x )
 /*
  *  -*- Mode: ANSI C -*-
  *  (Polynomial Interpolation)
- *  $Id: Lifting1D.h,v 1.8 2010/02/11 18:10:38 alannorton Exp $
+ *  $Id$
  *  Author: Wim Sweldens, Gabriel Fernandez
  *
  *  Given n points of the form (x,f), this program uses the Neville algorithm
@@ -519,7 +519,7 @@ template <class Data_T> void Lifting1D<Data_T>::free_matrix(
 
 /*
  *  -*- Mode: ANSI C -*-
- *  $Id: Lifting1D.h,v 1.8 2010/02/11 18:10:38 alannorton Exp $
+ *  $Id$
  *  Author: Gabriel Fernandez
  *
  *  Definition of the functions used to perform the LU decomposition

@@ -1,5 +1,5 @@
 //
-//      $Id: ImpExp.h,v 1.7 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 
@@ -22,8 +22,8 @@ namespace VAPoR {
 //! \class ImpExp
 //! \brief A class for managing data set metadata
 //! \author John Clyne
-//! \version $Revision: 1.7 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The ImpExp class is used to import/export state to/from a VAPoR session
 //!

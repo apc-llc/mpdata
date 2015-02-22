@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3D.h,v 1.7 2009/12/10 19:21:02 clynejp Exp $
+//      $Id$
 //
 
 #ifndef	_WaveletBlock3D_h_
@@ -18,8 +18,8 @@ namespace VAPoR {
 //! \class WaveletBlock3D
 //! \brief A block-based, 3D wavelet transformer
 //! \author John Clyne
-//! \version $Revision: 1.7 $
-//! \date    $Date: 2009/12/10 19:21:02 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides a 3D, block-based wavelet transform API
 //! based on Wim Swelden's Liftpack library.

@@ -10,8 +10,8 @@ namespace VAPoR {
 //! \class MatWaveWavedec
 //! \brief Implements a multi-level wavelet filter
 //! \author John Clyne
-//! \version $Revision: 1.3 $
-//! \date    $Date: 2010/09/13 18:08:05 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The MatWaveWavedec class provides multi-level wavelet filters similar
 //! to those provided by the Matlab wavedec and waverec functions. 

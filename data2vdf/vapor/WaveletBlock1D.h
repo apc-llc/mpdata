@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock1D.h,v 1.3 2009/12/10 19:21:02 clynejp Exp $
+//      $Id$
 //
 
 #ifndef	_WaveletBlock1D_h_
@@ -17,8 +17,8 @@ namespace VAPoR {
 //! \class WaveletBlock1D
 //! \brief A block-based, 1D wavelet transformer
 //! \author John Clyne
-//! \version $Revision: 1.3 $
-//! \date    $Date: 2009/12/10 19:21:02 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides a 1D, block-based wavelet transform API
 //! based on Wim Swelden's Liftpack library.

@@ -38,8 +38,8 @@ namespace VAPoR{
 //! \class ParamsBase
 //! \brief Nodes with state in Xml tree representation
 //! \author John Clyne
-//! \version $Revision: 1.17.2.1 $
-//! \date    $Date: 2011/12/19 20:27:04 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This is abstract parent of Params and related classes with state 
 //! kept in an xml node.  Used with the ParamNode class to support

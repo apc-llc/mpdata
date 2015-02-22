@@ -1,5 +1,5 @@
 //
-//      $Id: AMRData.h,v 1.10 2011/01/25 21:06:38 clynejp Exp $
+//      $Id$
 //
 //***********************************************************************
 //                                                                      *
@@ -36,8 +36,8 @@ namespace VAPoR {
 //! \class AMRData
 //! \brief This class manages an Adaptive Mesh Refinement grid.
 //! \author John Clyne
-//! \version $Revision: 1.10 $
-//! \date    $Date: 2011/01/25 21:06:38 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class manages block-structured Adaptive Mesh Refinement 
 //! grids.
@@ -282,25 +282,26 @@ public:
  //! The default interpolation method is
  //! linear.
  //!
- //! \param[in] min A three-element array specifying, in voxels, the minimum 
+ //! \param[in] bmin A three-element array specifying, in blocks, the minimum 
  //! extents of the region of interest. The coordinate system employed is
  //! relative to the refinement level. I.e. with each successive refinement
  //! level the coordinate of a voxel is given by xyz = xyz' * 2, where xyz'
  //! is the coordinate a the preceeding level.
- //! \param[in] max A three-element array specifying, in voxels, the maximum 
+ //! \param[in] bmax A three-element array specifying, in blocks, the maximum 
  //! extents of the region of interest. 
  //! \param[in] reflevel The maximum refinement level of the grid.
  //! If a negative value is specified, the refinement level of the tree
  //! pointed to by the \p tree parameter is used.
  //! \param[out] grid A pointer to floating point array large enough to 
- //! to contain the resampled data (max[i] - min[i] + 1);
+ //! to contain the resampled data (bmax[i] - bmin[i] + 1);
  //!
  //! \retval status A non-negative value is returned upon success
  int ReGrid(
-	const size_t min[3],
-	const size_t max[3],
+	const size_t bmin[3],
+	const size_t bmax[3],
 	int reflevel,
-	float *grid
+	float *grid,
+	const size_t dim[3]
  ) const;
 
  //! Return the data range for the grid
@@ -374,7 +375,8 @@ private:
 	const size_t min[3],
 	const size_t max[3],
 	int reflevel,
-	float *grid
+	float *grid,
+	const size_t dim[3]
  ) const;
 
  // Resample a single cell to a regular grid. This is a help method called
@@ -388,7 +390,8 @@ private:
 	const size_t min[3],		// same is in regrid_branch
 	const size_t max[3],
 	int reflevel,
-	float *grid
+	float *grid,
+	const size_t dim[3]
  ) const;
 
 };

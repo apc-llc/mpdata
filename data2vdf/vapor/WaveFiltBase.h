@@ -9,8 +9,8 @@ namespace VAPoR {
 //! \class WaveFiltBase
 //! \brief A base class for wavelet family filters
 //! \author John Clyne
-//! \version $Revision: 1.1 $
-//! \date    $Date: 2010/06/07 16:43:10 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The WaveFiltBase class is a base class for building classes of 
 //! wavelet families that can be implemented as FIR filters. A wavelet 

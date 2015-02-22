@@ -1,5 +1,5 @@
 //
-//      $Id: XmlNode.h,v 1.21.2.1 2011/12/22 20:29:19 alannorton Exp $
+//      $Id$
 //
 
 #ifndef	_XmlNode_h_
@@ -21,8 +21,8 @@ namespace VAPoR {
 //! \class XmlNode
 //! \brief An Xml tree
 //! \author John Clyne
-//! \version $Revision: 1.21.2.1 $
-//! \date    $Date: 2011/12/22 20:29:19 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class manages an XML tree. Each node in the tree
 //! coresponds to an XML "parent" element. The concept

@@ -1,5 +1,5 @@
 //
-//      $Id: DataMgrAMR.h,v 1.4 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 #ifndef	_DataMgrAMR_h_
@@ -18,8 +18,8 @@ namespace VAPoR {
 //! \class DataMgrAMR
 //! \brief A cache based data reader
 //! \author John Clyne
-//! \version $Revision: 1.4 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //
 class VDF_API DataMgrAMR : public DataMgr, public AMRIO {
@@ -30,7 +30,6 @@ public:
 	const string &metafile,
 	size_t mem_size
  );
-// ) : DataMgr(mem_size), AMRIO(metafile()) {};
 
  DataMgrAMR(
 	const MetadataVDC &metadata,
@@ -40,36 +39,29 @@ public:
 
  virtual ~DataMgrAMR() {}; 
 
- virtual int _VariableExists(
-	size_t ts,
-	const char *varname,
-	int reflevel = 0,
-	int lod = 0
- ) const {
-	return (AMRIO::VariableExists(ts,varname,reflevel));
- };
+protected:
+
 
  //
  //	Metadata methods
  //
+ virtual void   _GetDim(size_t dim[3], int reflevel) const {
+    return(AMRIO::GetDim(dim, reflevel));
+ };
 
- virtual const size_t *GetBlockSize() const {
-	return(AMRIO::GetBlockSize());
+ virtual void _GetBlockSize(size_t bs[3], int /*reflevel*/) const {
+	for (int i=0; i<3; i++) bs[i] = _bs[i];
  }
 
- virtual void GetBlockSize(size_t bs[3], int reflevel) const {
-	AMRIO::GetBlockSize(bs, reflevel);
- }
-
- virtual int GetNumTransforms() const {
+ virtual int _GetNumTransforms() const {
 	return(AMRIO::GetNumTransforms());
  };
 
- virtual vector<double> GetExtents() const {
-	return(AMRIO::GetExtents());
+ virtual vector<double> _GetExtents(size_t ts = 0) const {
+	return(AMRIO::GetExtents(ts));
  };
 
- virtual long GetNumTimeSteps() const {
+ virtual long _GetNumTimeSteps() const {
 	return(AMRIO::GetNumTimeSteps());
  };
 
@@ -87,52 +79,40 @@ public:
 	return(AMRIO::GetVariables2DYZ());
  };
 
- virtual vector<long> GetPeriodicBoundary() const {
+ virtual vector<long> _GetPeriodicBoundary() const {
 	return(AMRIO::GetPeriodicBoundary());
  };
 
- virtual vector<long> GetGridPermutation() const {
+ virtual vector<long> _GetGridPermutation() const {
 	return(AMRIO::GetGridPermutation());
  };
 
- virtual double GetTSUserTime(size_t ts) const {
+ virtual double _GetTSUserTime(size_t ts) const {
 	return(AMRIO::GetTSUserTime(ts));
  };
 
- virtual void GetTSUserTimeStamp(size_t ts, string &s) const {
+ virtual void _GetTSUserTimeStamp(size_t ts, string &s) const {
 	AMRIO::GetTSUserTimeStamp(ts,s);
  };
 
- virtual void   GetGridDim(size_t dim[3]) const {
-	return(AMRIO::GetGridDim(dim));
- };
-
- virtual string GetCoordSystemType() const {
-	return(AMRIO::GetCoordSystemType());
- };
 	
+ virtual int _VariableExists(
+	size_t ts,
+	const char *varname,
+	int reflevel = 0,
+	int lod = 0
+ ) const {
+	return (AMRIO::VariableExists(ts,varname,reflevel));
+ };
 
-
-
-protected:
-
- virtual int	OpenVariableRead(
+ virtual int	_OpenVariableRead(
 	size_t timestep,
 	const char *varname,
 	int reflevel = 0,
 	int lod = 0
  );
 
- virtual int	CloseVariable() {
-	 return (AMRIO::CloseVariable());
- };
-
- virtual int    BlockReadRegion(
-    const size_t bmin[3], const size_t bmax[3],
-    float *region
- ); 
-
- virtual void GetValidRegion(
+ virtual void _GetValidRegion(
     size_t min[3], size_t max[3], int reflevel
  ) const {
  	return(AMRIO::GetValidRegion(
@@ -140,13 +120,33 @@ protected:
 	);
  };
 
- virtual const float *GetDataRange() const {
+ virtual const float *_GetDataRange() const {
 	return(AMRIO::GetDataRange());
  }
 
+ virtual int   _BlockReadRegion(
+    const size_t bmin[3], const size_t bmax[3],
+    float *region
+ ); 
+
+ virtual int	_CloseVariable() {
+	 return (AMRIO::CloseVariable());
+ };
+
+
 private:
 	AMRTree _amrtree;
+	size_t _ts;
 	int _reflevel;
+	size_t _bs[3];
+	size_t _bsshift[3];
+
+	int _DataMgrAMR();
+	int _ReadBlocks(
+		const AMRTree *amrtree, int reflevel,
+		const size_t bmin[3], const size_t bmax[3],
+		float *blocks
+	);
 
 };
 

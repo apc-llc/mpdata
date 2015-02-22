@@ -1,5 +1,5 @@
 //
-//      $Id: AMRTreeBranch.h,v 1.8.2.1 2011/12/01 17:29:05 clynejp Exp $
+//      $Id$
 //
 //***********************************************************************
 //                                                                      *
@@ -36,8 +36,8 @@ namespace VAPoR {
 //! \class AMRTreeBranch
 //! \brief This class manages an octree data structure
 //! \author John Clyne
-//! \version $Revision: 1.8.2.1 $
-//! \date    $Date: 2011/12/01 17:29:05 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class manages a branch of Adaptive Mesh Refinement tree data 
 //! structure. 

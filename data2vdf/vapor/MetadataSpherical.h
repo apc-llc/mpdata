@@ -1,5 +1,5 @@
 //
-//      $Id: MetadataSpherical.h,v 1.4 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 
@@ -18,8 +18,8 @@ namespace VAPoR {
 //! \class MetadataSpherical
 //! \brief A class for managing data set Spherical metadata
 //! \author John Clyne
-//! \version $Revision: 1.4 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 class VDF_API MetadataSpherical : public MetadataVDC {
 public:

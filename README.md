@@ -6,23 +6,25 @@ An independent implementation of MPDATA solver by Piotr K. Smolarkiewicz and Len
 
 ### Prerequisites
 
+* CMake building tool:
+
+```
+$ sudo apt-get install cmake
+```
+
 * NETCDF headers & libraries:
 
 ```
 $ sudo apt-get install libnetcdf-dev
 ```
 
-* GRADS - 2D visualization tool often used in meteorology
+* GRADS - 2D visualization tool often used in meteorology:
 
 ```
 $ sudo apt-get install grads
 ```
 
-* CMake building tool
-
-```
-$ sudo apt-get install cmake
-```
+* VAPOR - 3D visualization tool: download *v2.3.0* (other versions might be incompatible!) from the [website](https://www.vapor.ucar.edu/page/vapor-download#Binary) and install to `/opt/vapor`
 
 ### Building on Linux
 
@@ -50,5 +52,14 @@ $ sudo apt-add-repository ppa:mc3man/trusty-media
 $ sudo apt-get update
 $ sudo apt-get install ffmpeg
 $ ffmpeg -i ring2d_frames/step%04d.png -c:v libx264 -pix_fmt yuv420p ring2d.mp4
+```
+
+See the resulting [video](http://youtu.be/PT01Ygx-uTA).
+
+### Testing `ring3d` on Linux
+
+```
+$ export PATH=$PATH:/opt/vapor
+$ ./ring3d 128 128
 ```
 

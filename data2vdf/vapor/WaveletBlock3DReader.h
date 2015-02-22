@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DReader.h,v 1.11 2010/06/07 16:34:48 clynejp Exp $
+//      $Id$
 //
 
 
@@ -15,8 +15,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DReader
 //! \brief A slab reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.11 $
-//! \date    $Date: 2010/06/07 16:34:48 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides a low-level API for reading data volumes from 
 //! a VDF file. The Read methods contained within are the  most efficient
@@ -87,7 +87,8 @@ public:
  virtual int OpenVariableWrite(
 	size_t timestep,
 	const char *varname,
-	int reflevel = 0
+	int reflevel = 0,
+	int lod = 0
  ) {SetErrMsg("Operation not supported"); return(-1);};
 
 

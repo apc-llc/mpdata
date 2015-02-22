@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DRegionReader.h,v 1.13 2010/08/18 22:13:24 clynejp Exp $
+//      $Id$
 //
 
 
@@ -15,8 +15,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DRegionReader
 //! \brief A sub-region reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.13 $
-//! \date    $Date: 2010/08/18 22:13:24 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an API for extracting volume sub-regions  
 //! from a VDF file
@@ -86,7 +86,8 @@ public:
  virtual int OpenVariableWrite(
 	size_t /*timestep*/,
 	const char * /*varname*/,
-	int /* reflevel */ = 0
+	int /* reflevel */ = 0,
+	int = 0
  ) {SetErrMsg("Operation not supported"); return(-1);};
 
 
@@ -150,7 +151,7 @@ public:
  //
  virtual int	BlockReadRegion(
 	const size_t bmin[3], const size_t bmax[3], 
-	float *region, int unblock = 1
+	float *region, bool unblock = true
  );
 
 #ifdef	DEAD

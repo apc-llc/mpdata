@@ -1,5 +1,5 @@
 //
-//      $Id: raw2vdf.cpp,v 1.24 2011/06/13 19:46:50 clynejp Exp $
+//      $Id$
 //
 //***********************************************************************
 //                                                                       *
@@ -40,7 +40,6 @@
 using namespace VetsUtil;
 using namespace VAPoR;
 
-namespace ns_raw2vdf {
 
 //
 //	Command line argument stuff
@@ -60,48 +59,52 @@ struct opt_t {
 	OptionParser::IntRange_T yregion;
 	OptionParser::IntRange_T zregion;
 	int staggeredDim;
-} opt;
-
-OptionParser::OptDescRec_T	set_opts[] = {
-	{"ts",		1, 	"0","Timestep of data file starting from 0"},
-	{"varname",	1, 	"var1",	"Name of variable"},
-	{"level",	1, 	"-1",	"Refinement levels saved. 0 => coarsest, 1 => "
-		"next refinement, etc. -1 => all levels defined by the .vdf file"},
-	{"lod",	1, 	"-1",	"Compression levels saved. 0 => coarsest, 1 => "
-		"next refinement, etc. -1 => all levels defined by the .vdf file"},
-	{"nthreads",1, 	"0",	"Number of execution threads (0 => # processors)"},
-	{"help",	0,	"",	"Print this message and exit"},
-	{"debug",	0,	"",	"Enable debugging"},
-	{"quiet",	0,	"",	"Operate quietly"},
-	{"swapbytes",	0,	"",	"Swap bytes in raw data as they are read from disk"},
-	{"dbl",	0,	"",	"Input data are 64-bit floats"},
-	{"xregion", 1, "-1:-1", "X dimension subregion bounds (min:max)"},
-	{"yregion", 1, "-1:-1", "Y dimension subregion bounds (min:max)"},
-	{"zregion", 1, "-1:-1", "Z dimension subregion bounds (min:max)"},
-	{"stagdim", 1, "0", "1, 2, or 3 indicate staggered in x, y, or z"},
-	{NULL}
 };
 
+namespace {
+	opt_t opt;
 
-OptionParser::Option_T	get_options[] = {
-	{"ts", VetsUtil::CvtToInt, &opt.ts, sizeof(opt.ts)},
-	{"varname", VetsUtil::CvtToString, &opt.varname, sizeof(opt.varname)},
-	{"level", VetsUtil::CvtToInt, &opt.level, sizeof(opt.level)},
-	{"lod", VetsUtil::CvtToInt, &opt.lod, sizeof(opt.lod)},
-	{"nthreads", VetsUtil::CvtToInt, &opt.nthreads, sizeof(opt.nthreads)},
-	{"help", VetsUtil::CvtToBoolean, &opt.help, sizeof(opt.help)},
-	{"debug", VetsUtil::CvtToBoolean, &opt.debug, sizeof(opt.debug)},
-	{"quiet", VetsUtil::CvtToBoolean, &opt.quiet, sizeof(opt.quiet)},
-	{"swapbytes", VetsUtil::CvtToBoolean, &opt.swapbytes, sizeof(opt.swapbytes)},
-	{"dbl", VetsUtil::CvtToBoolean, &opt.dbl, sizeof(opt.dbl)},
-	{"xregion", VetsUtil::CvtToIntRange, &opt.xregion, sizeof(opt.xregion)},
-	{"yregion", VetsUtil::CvtToIntRange, &opt.yregion, sizeof(opt.yregion)},
-	{"zregion", VetsUtil::CvtToIntRange, &opt.zregion, sizeof(opt.zregion)},
-	{"stagdim", VetsUtil::CvtToInt, &opt.staggeredDim, sizeof(opt.staggeredDim)},
-	{NULL}
-};
+	OptionParser::OptDescRec_T	set_opts[] = {
+		{"ts",		1, 	"0","Timestep of data file starting from 0"},
+		{"varname",	1, 	"var1",	"Name of variable"},
+		{"level",	1, 	"-1",	"Refinement levels saved. 0 => coarsest, 1 => "
+			"next refinement, etc. -1 => all levels defined by the .vdf file"},
+		{"lod",	1, 	"-1",	"Compression levels saved. 0 => coarsest, 1 => "
+			"next refinement, etc. -1 => all levels defined by the .vdf file"},
+		{"nthreads",1, 	"0",	"Number of execution threads (0 => # processors)"},
+		{"help",	0,	"",	"Print this message and exit"},
+		{"debug",	0,	"",	"Enable debugging"},
+		{"quiet",	0,	"",	"Operate quietly"},
+		{"swapbytes",	0,	"",	"Swap bytes in raw data as they are read from disk"},
+		{"dbl",	0,	"",	"Input data are 64-bit floats"},
+		{"xregion", 1, "-1:-1", "X dimension subregion bounds (min:max)"},
+		{"yregion", 1, "-1:-1", "Y dimension subregion bounds (min:max)"},
+		{"zregion", 1, "-1:-1", "Z dimension subregion bounds (min:max)"},
+		{"stagdim", 1, "0", "1, 2, or 3 indicate staggered in x, y, or z"},
+		{NULL}
+	};
 
-const char	*ProgName;
+
+	OptionParser::Option_T	get_options[] = {
+		{"ts", VetsUtil::CvtToInt, &opt.ts, sizeof(opt.ts)},
+		{"varname", VetsUtil::CvtToString, &opt.varname, sizeof(opt.varname)},
+		{"level", VetsUtil::CvtToInt, &opt.level, sizeof(opt.level)},
+		{"lod", VetsUtil::CvtToInt, &opt.lod, sizeof(opt.lod)},
+		{"nthreads", VetsUtil::CvtToInt, &opt.nthreads, sizeof(opt.nthreads)},
+		{"help", VetsUtil::CvtToBoolean, &opt.help, sizeof(opt.help)},
+		{"debug", VetsUtil::CvtToBoolean, &opt.debug, sizeof(opt.debug)},
+		{"quiet", VetsUtil::CvtToBoolean, &opt.quiet, sizeof(opt.quiet)},
+		{"swapbytes", VetsUtil::CvtToBoolean, &opt.swapbytes, sizeof(opt.swapbytes)},
+		{"dbl", VetsUtil::CvtToBoolean, &opt.dbl, sizeof(opt.dbl)},
+		{"xregion", VetsUtil::CvtToIntRange, &opt.xregion, sizeof(opt.xregion)},
+		{"yregion", VetsUtil::CvtToIntRange, &opt.yregion, sizeof(opt.yregion)},
+		{"zregion", VetsUtil::CvtToIntRange, &opt.zregion, sizeof(opt.zregion)},
+		{"stagdim", VetsUtil::CvtToInt, &opt.staggeredDim, sizeof(opt.staggeredDim)},
+		{NULL}
+	};
+
+	const char	*ProgName;
+}
 
 	
 void    swapbytes(
@@ -253,8 +256,8 @@ int read_next_slice(
 
 }
 
-void	process_volume_vdc2(
-	WaveCodecIO *wcwriter,
+void	process_volume(
+	VDFIOBase *vdfio,
 	FILE *fp,
 	Metadata::VarType_T vtype,
 	float *read_timer,
@@ -262,7 +265,7 @@ void	process_volume_vdc2(
 	float *xform_timer
 ) {
 
-	const size_t *dim = wcwriter->GetDimension();
+	const size_t *dim = vdfio->GetDimension();
 
 	size_t dim3d[3];
 	switch (vtype) {
@@ -294,7 +297,7 @@ void	process_volume_vdc2(
 	float *slice = new float[dim3d[0]*dim3d[1]];
 
 	int rc;
-	rc = wcwriter->OpenVariableWrite(opt.ts,opt.varname, opt.level, opt.lod);
+	rc = vdfio->OpenVariableWrite(opt.ts,opt.varname, opt.level, opt.lod);
 	if (rc<0) {
 		MyBase::SetErrMsg(
 			"Failed to open variable \"%s\" for writing", opt.varname
@@ -308,10 +311,10 @@ void	process_volume_vdc2(
 			cout << "Reading slice # " << z << endl;
 		}
 
-		rc = read_next_slice(wcwriter, dim3d, fp, slice, read_timer);
+		rc = read_next_slice(vdfio, dim3d, fp, slice, read_timer);
 		if (rc<0) exit(1);
 
-		rc = wcwriter->WriteSlice(slice);
+		rc = vdfio->WriteSlice(slice);
 		if (rc<0) {
 			MyBase::SetErrMsg(
 				"Failed to write slice # %d of variable \"%s\"", z, opt.varname
@@ -320,96 +323,18 @@ void	process_volume_vdc2(
 		}
 	}
 
-	rc = wcwriter->CloseVariable();
+	rc = vdfio->CloseVariable();
 	if (rc<0) {
 		MyBase::SetErrMsg("Error closing output file"); 
 		exit(1);
 	}
 
-	*write_timer = wcwriter->GetWriteTimer();
-	*xform_timer = wcwriter->GetXFormTimer();
+	*write_timer = vdfio->GetWriteTimer();
+	*xform_timer = vdfio->GetXFormTimer();
 
 	delete [] slice;
 }
 
-void	process_volume_vdc1(
-	WaveletBlock3DBufWriter *wbwriter,
-	FILE *fp,
-	Metadata::VarType_T vtype,
-	float *read_timer,
-	float *write_timer,
-	float *xform_timer
-) {
-
-	const size_t *dim = wbwriter->GetDimension();
-
-	size_t dim3d[3];
-	switch (vtype) {
-	case Metadata::VAR2D_XY:
-		dim3d[0] = dim[0];
-		dim3d[1] = dim[1];
-		dim3d[2] = 1;
-	break;
-	case Metadata::VAR2D_XZ:
-		dim3d[0] = dim[0];
-		dim3d[1] = dim[2];
-		dim3d[2] = 1;
-	break;
-	case Metadata::VAR2D_YZ:
-		dim3d[0] = dim[1];
-		dim3d[1] = dim[2];
-		dim3d[2] = 1;
-	break;
-	case Metadata::VAR3D:
-		dim3d[0] = dim[0];
-		dim3d[1] = dim[1];
-		dim3d[2] = dim[2];
-	break;
-	default:
-	break;
-
-	}
-
-	float *slice = new float[dim3d[0]*dim3d[1]];
-
-	int rc;
-	rc = wbwriter->OpenVariableWrite(opt.ts, opt.varname, opt.level);
-	if (rc<0) {
-		MyBase::SetErrMsg(
-			"Failed to open variable \"%s\" for writing", opt.varname
-		);
-		exit(1);
-	}
-
-	for (size_t z=0; z<dim3d[2]; z++) {
-
-		if (z%10== 0 && ! opt.quiet) {
-			cout << "Reading slice # " << z << endl;
-		}
-
-		rc = read_next_slice(wbwriter, dim3d, fp, slice, read_timer);
-		if (rc<0) exit(1);
-
-		rc = wbwriter->WriteSlice(slice);
-		if (rc<0) {
-			MyBase::SetErrMsg(
-				"Failed to write slice # %d of variable \"%s\"", z, opt.varname
-			);
-			exit(1);
-		}
-	}
-
-	rc = wbwriter->CloseVariable();
-	if (rc<0) {
-		MyBase::SetErrMsg("Error closing output file"); 
-		exit(1);
-	}
-
-	*write_timer = wbwriter->GetWriteTimer();
-	*xform_timer = wbwriter->GetXFormTimer();
-
-	delete [] slice;
-}
 
 float *read_region(
 	VDFIOBase *vdfio,
@@ -495,7 +420,7 @@ float *read_region(
 
 
 void	process_region(
-	WaveletBlock3DRegionWriter *regwriter,
+	VDFIOBase *vdfio,
 	FILE	*fp, 
 	Metadata::VarType_T vtype,
 	float *read_timer,
@@ -504,7 +429,7 @@ void	process_region(
 ) {
 
 	int rc;
-	rc = regwriter->OpenVariableWrite(opt.ts, opt.varname, opt.level);
+	rc = vdfio->OpenVariableWrite(opt.ts, opt.varname, opt.level, opt.lod);
 	if (rc<0) {
 		MyBase::SetErrMsg(
 			"Failed to open variable \"%s\" for writing", opt.varname
@@ -516,10 +441,10 @@ void	process_region(
 	float *buf = NULL;
 	size_t min[3], max[3];
 
-	buf = read_region(regwriter, fp, vtype, min, max, read_timer);
+	buf = read_region(vdfio, fp, vtype, min, max, read_timer);
 
-	regwriter->WriteRegion((float *) buf, min, max);
-	if (regwriter->GetErrCode() != 0) {
+	vdfio->WriteRegion((float *) buf, min, max);
+	if (vdfio->GetErrCode() != 0) {
 		MyBase::SetErrMsg(
 			"Failed to write region of variable \"%s\"", opt.varname
 		); 
@@ -528,59 +453,16 @@ void	process_region(
 
 	delete [] buf;
 
-	rc = regwriter->CloseVariable();
+	rc = vdfio->CloseVariable();
 	if (rc<0) {
 		MyBase::SetErrMsg("Error closing output file"); 
 		exit(1);
 	}
 
-	*write_timer = regwriter->GetWriteTimer();
-	*xform_timer = regwriter->GetXFormTimer();
+	*write_timer = vdfio->GetWriteTimer();
+	*xform_timer = vdfio->GetXFormTimer();
 }
 
-void	process_region_vdc2(
-	WaveCodecIO *wcwriter,
-	FILE	*fp, 
-	Metadata::VarType_T vtype,
-	float *read_timer,
-	float *write_timer,
-	float *xform_timer
-) {
-
-	int rc;
-	rc = wcwriter->OpenVariableWrite(opt.ts,opt.varname, opt.level, opt.lod);
-	if (rc<0) {
-		MyBase::SetErrMsg(
-			"Failed to open variable \"%s\" for writing", opt.varname
-		);
-		exit(1);
-	}
-
-
-	float *buf = NULL;
-	size_t min[3], max[3];
-
-	buf = read_region(wcwriter, fp, vtype, min, max, read_timer);
-
-	wcwriter->WriteRegion(buf, min, max);
-	if (wcwriter->GetErrCode() != 0) {
-		MyBase::SetErrMsg(
-			"Failed to write region of variable \"%s\"", opt.varname
-		); 
-		exit(1);
-	}
-
-	delete [] buf;
-
-	rc = wcwriter->CloseVariable();
-	if (rc<0) {
-		MyBase::SetErrMsg("Error closing output file"); 
-		exit(1);
-	}
-
-	*write_timer = wcwriter->GetWriteTimer();
-	*xform_timer = wcwriter->GetXFormTimer();
-}
 
 void ErrMsgCBHandler(const char *msg, int) {
 	cerr << ProgName << " : " << msg << endl;
@@ -686,37 +568,20 @@ extern "C" int raw2vdf(int argc, char **argv) {
 
 	double t0 = vdfio->GetTime();
 
-	if (vdc1) {
-		if (min[0] == min[1] && min[1] == min[2] && min[2] == max[0] &&
-			max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
-			vtype == Metadata::VAR3D) {
+	if (min[0] == min[1] && min[1] == min[2] && min[2] == max[0] &&
+		max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
+		vtype == Metadata::VAR3D) {
 
-			process_volume_vdc1(
-				(WaveletBlock3DBufWriter *) wbwriter3D, fp, vtype, &read_timer,
-				&write_timer, &xform_timer
-			);
-		}
-		else {
-			process_region(
-				(WaveletBlock3DRegionWriter *) wbwriter3D, fp, vtype, 
-				&read_timer, &write_timer, &xform_timer
-			);
-		}
+		process_volume(
+			vdfio, fp, vtype, &read_timer,
+			&write_timer, &xform_timer
+		);
 	}
 	else {
-		if (min[0] == min[1] && min[1] == min[2] && min[2] == max[0] &&
-			max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 ) {
-
-			process_volume_vdc2(
-				wcwriter, fp, vtype, &read_timer, &write_timer, &xform_timer
-			);
-		}
-		else {
-			process_region_vdc2(
-				wcwriter, fp, vtype, 
-				&read_timer, &write_timer, &xform_timer
-			);
-		}
+		process_region(
+			vdfio, fp, vtype, 
+			&read_timer, &write_timer, &xform_timer
+		);
 	}
 
 
@@ -735,4 +600,3 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	return 0;
 }
 
-} // namespace ns_raw2vdf

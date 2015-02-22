@@ -1,5 +1,5 @@
 //
-//      $Id: OptionParser.h,v 1.6 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 //************************************************************************
 //								*
@@ -123,10 +123,9 @@ public:
  //! \sa ParseOptions(), RemoveOptions()
  int ParseOptions(int *argc, char **argv, Option_T *opts);
  int ParseOptions(const EnvOpt_T *envv, Option_T *opts);
- void	RemoveOptions(const OptDescRec_T  *odr);
- void	PrintOptionHelp(FILE *fp, int linelimit = 80);
+ void	RemoveOptions(std::vector <string> options);
+ void	PrintOptionHelp(FILE *fp, int linelimit = 80, bool docopyright = true);
 
-private:
  typedef struct _OptRec {
 	const char *option;			// name of option without preceeding '-' 
 	const char *value;     		// current val for the argument
@@ -135,10 +134,18 @@ private:
 	int         arg_count;	// num args expected by option
  } _OptRec_T;
 
+private:
+
  vector<struct _OptRec *> _optTbl;
 
  _OptRec_T   *_get_option (const char *name);
  int _parse_options(const Option_T *opts);
+
+ friend bool opt_cmp(
+	OptionParser::_OptRec_T *a,
+	OptionParser::_OptRec_T *b
+ );
+	
 
 };
 
@@ -156,6 +163,8 @@ COMMON_API int	CvtToBoolean(const char *from, void *to);
 
 COMMON_API int	CvtToString(const char *from, void *to);
 
+COMMON_API int	CvtToCPPStr(const char *from, void *to);
+
 COMMON_API int	CvtToDimension2D(const char *from, void *to);
 
 COMMON_API int	CvtToDimension3D(const char *from, void *to);
@@ -170,9 +179,15 @@ COMMON_API int CvtToStrVec(const char *from, void *to);
 //
 COMMON_API int CvtToIntVec(const char *from, void *to);
 
+// convert a colon delimited ascii string to vector of C++ 
+// STL ints: (vector <float> *)
+//
+COMMON_API int	CvtToFloatVec(const char	*from, void *to);
+
 // Convert a colon-delimited pair of integers to a IntRange_T type
 //
 COMMON_API int	CvtToIntRange(const char *from, void *to);
+
 
 };
 

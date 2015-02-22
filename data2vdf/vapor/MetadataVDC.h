@@ -1,5 +1,5 @@
 //
-//      $Id: MetadataVDC.h,v 1.7 2010/09/24 17:14:07 southwic Exp $
+//      $Id$
 //
 
 
@@ -7,6 +7,7 @@
 #define	_MetadataVDC_h_
 
 #include <stack>
+#include <string>
 #include <expat.h>
 #include <vapor/MyBase.h>
 #include <vapor/common.h>
@@ -54,14 +55,14 @@ namespace VAPoR {
 		return(RETVAL); \
 	}
 
-const int VDF_VERSION = 4;
+const int VDF_VERSION = 5;
 
 //
 //! \class MetadataVDC
 //! \brief A class for managing data set metadata
 //! \author John Clyne
-//! \version $Revision: 1.7 $
-//! \date    $Date: 2010/09/24 17:14:07 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! The MetadataVDC class is used to read and write VAPoR
 //! metadata files.  A metadata file desribes a time-varying,
@@ -428,16 +429,10 @@ public:
  //
  int SetExtents(const vector<double> &value);
 
- //! Return the domain extents specified in user coordinates
+ //! \copydoc Metadata::GetExtents()
  //!
- //! \retval extents A six-element array containing the min and max
- //! bounds of the data domain in user-defined coordinates
- //!
- //! \remarks Required element
  //
- vector<double> GetExtents() const {
-	return(_rootnode->GetElementDouble(_extentsTag));
-	};
+ vector<double> GetExtents(size_t ts = 0) const; 
 
  //! Return true if \p value is a valid coordinate extent definition
  //!
@@ -505,6 +500,26 @@ public:
 	_rootnode->GetElementStringVec(_vars3DTag, svec);
 	return(svec);
  };
+
+ //! \copydoc Metadata::GetCoordinateVariables()
+ //
+ vector <string> GetCoordinateVariables() const {
+	vector <string> svec;
+	_rootnode->GetElementStringVec(_coordVarsTag, svec);
+	return(svec);
+ }
+
+ //! Indicate which variables in a VDC are coordinate variables
+ //!
+ //! This method specifies the names of three coordinate variables
+ //! corresponding to the X, Y, and Z axis.
+ //!
+ //! \param[in] value A three-element vector containing the names of 
+ //! the grid coordinate variables for the X, Y, and Z axis, respectively.
+ //!
+ //! \retval status Returns a non-negative integer on success
+ //
+ int SetCoordinateVariables(const vector <string> &value);
 
  //! Indicate which variables in a VDC are of type 2DXY
  //!
@@ -604,6 +619,39 @@ public:
 	return(0);
  }
 
+
+ //! Set a global missing value
+ //!
+ //! This method establishes a global missing value for the VDC. Any
+ //! grid location, for any variable at any time step, with a data value
+ //! equal to \p value will be treated as having missing data
+ //!
+ int SetMissingValue(double value) {
+	vector <double> valvec; valvec.push_back(value);
+	_rootnode->SetElementDouble(_missingValueTag, valvec);
+	return(0);
+ }
+
+ //! Unset a previous set missing value
+ //!
+ //! This method will, despite its name, will unset any missing value
+ //! previously set with SetMissingValue(value)
+ //!
+ int SetMissingValue() {
+	_rootnode->SetElementDouble(_missingValueTag, _emptyDoubleVec);
+	return(0);
+ }
+
+ //! Return the current global missing value, if any
+ //!
+ //! This method returns a one-element vector containing the
+ //! current missing value. If no missing value is defined an 
+ //! empty vector will be returned.
+ //
+ vector<double> GetMissingValue() const {
+	return _rootnode->GetElementDouble(_missingValueTag);
+ }
+
  //! Return a three-element integer array indicating the coordinate
  //! ordering permutation.
  //!
@@ -648,10 +696,7 @@ public:
  //!
  //! \sa SetMapProjection()
  //
- virtual string GetMapProjection() const {
-	return(_rootnode->GetElementString(_mapProjectionTag));
- };
-
+ virtual string GetMapProjection() const;
 
  //! Set the time of a time step in user-defined coordinates.
  //!
@@ -762,36 +807,19 @@ public:
 	return(_rootnode->GetChild(ts)->GetElementDouble(_xCoordsTag));
  };
 
- //! Return true if \p value is a valid X dimension coordinate array
- //!
- //! \param[i] value An array of monotonically increasing values specifying 
- //! the X // coordinates, in a user-defined coordinate system, of each 
- //! YZ sample plane. 
- //! \retval boolean True if \p value is a valid argument
- //
- int IsValidXCoords(const vector<double> &value) const {
-	return(value.size() == _dim[0]);
-	}
-
  int SetTSYCoords(size_t ts, const vector<double> &value);
 
  vector<double> GetTSYCoords(size_t ts) const {
 	CHK_TS_OPT(ts, _emptyDoubleVec)
-	return(_rootnode->GetChild(ts)->GetElementDouble(_xCoordsTag));
+	return(_rootnode->GetChild(ts)->GetElementDouble(_yCoordsTag));
  }
-
- int IsValidYCoords(const vector<double> &value) const {
-	return(value.size() == _dim[1]);
-	}
 
  int SetTSZCoords(size_t ts, const vector<double> &value);
- const vector<double> &GetTSZCoords(size_t ts) const {
+
+ vector<double> GetTSZCoords(size_t ts) const {
 	CHK_TS_OPT(ts, _emptyDoubleVec)
-	return(_rootnode->GetChild(ts)->GetElementDouble(_xCoordsTag));
+	return(_rootnode->GetChild(ts)->GetElementDouble(_zCoordsTag));
  }
- int IsValidZCoords(const vector<double> &value) const {
-	return(value.size() == _dim[2]);
-	}
 
  //! Set a comment for the time step indicated by \p ts
  //
@@ -829,8 +857,7 @@ public:
  //
  int SetTSExtents(size_t ts, const vector<double> &value);
 
- //! Return the domain extents specified in user coordinates
- //! for the indicated time step
+ //! \deprecated Use GetExtents()
  //!
  //! \param[in] ts A valid data set time step in the range from zero to
  //! GetNumTimeSteps() - 1.
@@ -841,9 +868,24 @@ public:
  //!
  //! \remarks Optional element
  //
- vector<double> GetTSExtents(size_t ts) const {
-	CHK_TS_OPT(ts, _rootnode->GetElementDouble(_extentsTag))
-	return(_rootnode->GetChild(ts)->GetElementDouble(_extentsTag));
+ vector<double> GetTSExtents(size_t ts) const {return (GetExtents(ts)); }
+
+ //! Set a time-varying missing value
+ //!
+ //! This method establishes a time-varying missing value for the VDC. Any
+ //! grid location, for any variable at time step = \p ts, with a data value
+ //! equal to \p value will be treated as having missing data
+ //!
+ //! A time-varying missing value takes prededence over
+ //! a global missing value.
+ //!
+ int SetTSMissingValue(size_t ts, double v);
+
+ //! Returns the time-varying missing value, if any
+ //
+ vector<double> GetTSMissingValue(size_t ts) const {
+	CHK_TS_OPT(ts, _emptyDoubleVec)
+	return(_rootnode->GetChild(ts)->GetElementDouble(_missingValueTag));
  }
 
  //! Set a comment for the variable, \p v at the time step indicated by \p ts
@@ -921,6 +963,26 @@ public:
  int IsValidVDataRange(const vector<double> &value) const {
 	return(value.size() == 2);
 	}
+
+ //! Set a variable-specific missing value
+ //!
+ //! This method establishes a time-varying, variable-specific missing 
+ //! value for the VDC. Any
+ //! grid location, for variable = \p var,  at time step = \p ts, with 
+ //! a data value
+ //! equal to \p value will be treated as having missing data
+ //!
+ //! A time-varying, variable-specific missing value takes prededence over
+ //! a time-varying or global missing value.
+ //!
+ //! \sa SetMissingValue(), SetTSMissingValue()
+ //
+ int SetVMissingValue(size_t ts, const string &var, double v);
+
+ vector<double> GetVMissingValue(size_t ts, const string &var) const {
+	CHK_VAR_REQ(ts, var, _emptyDoubleVec)
+	return(_rootnode->GetChild(ts)->GetChild(var)->GetElementDouble(_missingValueTag));
+ }
 
  //------------------------------------------------------------------
  //			User-Defined Metdata Attributes
@@ -1027,6 +1089,17 @@ public:
 	return(_rootnode->GetElementString(tag));
  }
 
+ int SetUserDataStringVec(const string &tag, const vector <string> &value) {
+	_RecordUserDataTags(_userDSTags, tag);
+	_rootnode->SetElementStringVec(tag, value);
+	return(0);
+ }
+ vector <string> GetUserDataStringVec(const string &tag) const {
+	vector <string> vec;
+	_rootnode->GetElementStringVec(tag, vec);
+	return(vec);
+ }
+
 
  //------------------------------------------------------------------
  //			Time Step User-Defined Metdata Attributes
@@ -1104,6 +1177,7 @@ public:
  vector<string> GetTSUserDataDoubleTags() const {
 	return(_timeStepUserDDTags);
  }
+
 
  int SetTSUserDataString(
 	size_t ts, const string &tag, const string &value
@@ -1279,12 +1353,14 @@ private:
  static const string _vars2DXYTag;
  static const string _vars2DXZTag;
  static const string _vars2DYZTag;
+ static const string _coordVarsTag;
  static const string _xCoordsTag;
  static const string _yCoordsTag;
  static const string _zCoordsTag;
  static const string _periodicBoundaryTag;
  static const string _gridPermutationTag;
  static const string _mapProjectionTag;
+ static const string _missingValueTag;
 
  // known xml attribute names
  //
@@ -1315,6 +1391,8 @@ private:
  vector <string> _variableUserDLTags;	// variable long tags
  vector <string> _variableUserDDTags;
  vector <string> _variableUserDSTags;
+
+ string _newMapProjection;
 
  int _init();
  int _init1(

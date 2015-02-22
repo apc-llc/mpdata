@@ -1,5 +1,5 @@
 //
-//      $Id: WaveletBlock3DBufReader.h,v 1.11 2010/08/18 22:13:24 clynejp Exp $
+//      $Id$
 //
 
 
@@ -14,8 +14,8 @@ namespace VAPoR {
 //! \class WaveletBlock3DBufReader
 //! \brief A slice-based reader for VDF files
 //! \author John Clyne
-//! \version $Revision: 1.11 $
-//! \date    $Date: 2010/08/18 22:13:24 $
+//! \version $Revision$
+//! \date    $Date$
 //!
 //! This class provides an API for reading volumes 
 //! from a VDF file one slice at a time.
