@@ -32,6 +32,7 @@ $ sudo apt-get install grads
 
 ```
 $ git clone https://github.com/apc-llc/mpdata.git
+$ cd mpdata
 $ mkdir build
 $ cd build
 $ cmake ..
