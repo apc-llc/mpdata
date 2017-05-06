@@ -2,6 +2,7 @@
 #define _RegularGrid_
 
 #include <ostream>
+#include <vector>
 #include <vapor/common.h>
 
 //
@@ -180,6 +181,10 @@ public:
  virtual void GetBoundingBox(
 	const size_t min[3], const size_t max[3], double extents[6]
  ) const;
+ virtual void GetBoundingBox(
+	const std::vector <size_t> &min, const std::vector <size_t> &max,
+	std::vector <double> &minu, std::vector <double> &maxu
+ ) const; 
 
  //!
  //! Get voxel coordinates of grid containing a region
@@ -271,7 +276,7 @@ public:
  //!
  //! \sa SetInterpolationOrder()
  //!
- virtual int GetInterpolationOrder() const {return _interpolationOrder;};
+ virtual int GetInterpolationOrder() const { return _interpolationOrder;};
 
  //! Set the interpolation order to be used during function reconstruction
  //!
@@ -303,11 +308,105 @@ public:
  //! \retval status A negative int is returned if index(i,j,k) is out
  //! out of bounds
  //!
+ 
  virtual int GetUserCoordinates(
 	size_t i, size_t j, size_t k, 
 	double *x, double *y, double *z
  ) const;
 
+ //! void getBilinearWeights(double x, double y, size_t k,
+ //!						double *iwgt, double *jwgt) const;
+ 
+ //! Return the bilinear interpolation weights of a point given in user
+ //! coordinates.  These weights apply to the x (iwgt) and y (jwgt) axes.
+ //!
+ //! This function applies the bilinear interpolation method to derive
+ //! a the x and y axis weights of a point in user coordinates.
+ //!
+ //! \param[in] x coordinate of grid point along fastest varying dimension
+ //! \param[in] y coordinate of grid point along second fastest 
+ //! varying dimension
+ //! \param[out] a bilinearly calculated weight for the x axis
+ //! \param[out] a bilinearly calculated weight for the y axis
+ 
+ void getBilinearWeights(double x, double y, double z,
+						double &iwgt, double &jwgt) const;
+
+ //! double bilinearElevation(double x, double y, size_t k,
+ //!						double *iwgt, double *jwgt) const;
+ 
+ //! Return the bilinearly interpolated elevation of a point given in user
+ //! coordinates. 
+ //!
+ //! This function applies the bilinear interpolation method to derive
+ //! a the elevation from x and y axis weights of a point in user coordinates.
+ //!
+ //! \param[in] i index of bottom left cell corner 
+ //! \param[in] i index of top right cell corner
+ //! \param[in] j index of bottom left cell corner 
+ //! \param[in] j index of top right cell corner
+ //! \param[in] k index of the level to interpolate upon
+ //! \param[in] the i-axis weight for bilinear interpolation
+ //! \param[in] the j-axis weight for bilinear interpolation
+ //! \param[out] a bilinearly calculated elevation value
+ 
+ double bilinearElevation(size_t i0, size_t i1, size_t j0, size_t j1,
+						size_t k0, double iwgt, double jwgt) const;
+
+ //! double bilinearInterpolation(double x, double y, size_t k,
+ //!						double *iwgt, double *jwgt) const;
+ 
+ //! Return the bilinearly interpolated value of the currently opened variable
+ //! of a point given in user coordinates. 
+ //!
+ //! This function applies the bilinear interpolation method to derive
+ //! a variable value from x and y axis weights of a point in user coordinates.
+ //!
+ //! \param[in] i index of bottom left cell corner 
+ //! \param[in] i index of top right cell corner
+ //! \param[in] j index of bottom left cell corner 
+ //! \param[in] j index of top right cell corner
+ //! \param[in] k index of the level to interpolate upon
+ //! \param[in] the i-axis weight for bilinear interpolation
+ //! \param[in] the j-axis weight for bilinear interpolation
+ //! \param[out] a bilinearly calculated value of the currently open variable
+ double bilinearInterpolation(size_t i0, size_t i1, size_t j0, size_t j1,
+						size_t k0, double iwgt, double jwgt) const;
+
+ //! Return the interpolated value of a point in user
+ //! coordinates.  This only interpolates in the vertical (z) direction.
+
+ //! Return the quadratically interpolated value of a point in user
+ //! coordinates.
+ //!
+ //! This function applies the quadratic interpolation method to derive
+ //! a the value of a variable in user coordinates from its neighboring
+ //! points in ijk space.  Linear interpolation is applied at the boundaries
+ //! of the domain.
+ //!
+ //! \param[in] x coordinate of grid point along fastest varying dimension
+ //! \param[in] y coordinate of grid point along second fastest 
+ //! varying dimension
+ //! \param[in] z coordinate of grid point along third fastest 
+ //! varying dimension
+ //! \param[out] a quadratically interpolated value of a point in user
+ //! coordinates
+
+ double quadraticInterpolation(double x, double y, double z) const;
+
+ //! Return the linearly interpolated value of a point in user
+ //! coordinates.  This only interpolates in the vertical (z) direction.
+ //!
+ //! \param[in] x coordinate of grid point along fastest varying dimension
+ //! \param[in] y coordinate of grid point along second fastest 
+ //! varying dimension
+ //! \param[in] z coordinate of grid point along third fastest 
+ //! varying dimension
+ //! \param[out] a linearly interpolated value of a point in user
+ //! coordinates.
+ 
+ double verticalLinearInterpolation(double x, double y, double z) const;
+ 
  //! Return the closest grid point to the specified user coordinates
  //!
  //! This method returns the ijk index of the grid point closest to
@@ -449,6 +548,21 @@ public:
 	*x = _delta[0]; *y = _delta[1]; *z = _delta[2];
  };
 
+ //! Return the rank of the grid
+ //!
+ //! This method returns the number of dimensions, between 1 and 3,
+ //! that do not have a length of 1
+ //
+ virtual int GetRank() {
+	int rank = 0;
+	for (int i=0; i<3; i++) if (_min[i]!=_max[i]) rank++;
+	return(rank);
+ }
+
+ virtual double _interpolateVaryingCoord(size_t /*i0*/, size_t /*j0*/,
+				size_t /*k0*/, double /*x*/, double /*y*/, double /*z*/) const
+				{return 0.0;}; 
+
  //! Return the internal data structure containing a copy of the blocks
  //! passed in by the constructor
  //!
@@ -545,12 +659,12 @@ protected:
  float &_AccessIJK(float **blks, size_t i, size_t j, size_t k) const;
  void _ClampCoord(double &x, double &y, double &z) const;
  void _SetExtents(const double extents[6]);
+ size_t _min[3];	// ijk offset of first voxel in ROI (relative to ROI)
+ size_t _max[3];	// ijk offset of last voxel in ROI (relative to ROI)
 
 private:
 	size_t _bs[3];	// dimensions of each block
 	size_t _bdims[3];	// dimensions (specified in blocks) of ROI 
-	size_t _min[3];	// ijk offset of first voxel in ROI (relative to ROI)
-	size_t _max[3];	// ijk offset of last voxel in ROI (relative to ROI)
 	size_t _minabs[3];	// ijk offset of first voxel in ROI (absolute coords)
 	size_t _maxabs[3];	// ijk offset of last voxel in ROI (absolute coords)
 	double _minu[3];	

@@ -235,13 +235,11 @@ public:
  //!
  //! When disabled calls to SetErrMsg() report no error messages
  //! either through the error message callback or the error message
- //! FILE pointer. Error messages are recorded and can be retrieved
- //! by GetErrMsg(). By default error
- //! reporting is enabled.
+ //! FILE pointer. 
  //! 
  //! \param[in] enable Boolean flag to enable or disable error reporting
  //!
- bool EnableErrMsg(bool enable) {
+ static bool EnableErrMsg(bool enable) {
 	bool prev = Enabled; Enabled = enable; return (prev);
  };
 
@@ -321,6 +319,25 @@ private:
  //
  COMMON_API void	StrToWordVec(const string &s, vector <string> &v);
 
+
+ std::vector<std::string> &SplitString(
+    const std::string &s, char delim, std::vector<std::string> &elems
+ ); 
+ std::vector<size_t> &SplitString(
+    const std::string &s, char delim, std::vector<size_t> &elems
+ ); 
+ std::vector<int> &SplitString(
+    const std::string &s, char delim, std::vector<int> &elems
+ ); 
+ std::vector<float> &SplitString(
+    const std::string &s, char delim, std::vector<float> &elems
+ ); 
+ std::vector<double> &SplitString(
+    const std::string &s, char delim, std::vector<double> &elems
+ ); 
+
+
+
  //! Retrieve a sequence of bits
  //!
  //! Extract \p n bits from \p targ starting at position
@@ -352,11 +369,7 @@ private:
 	unsigned long long src
  );
 
-#ifdef WIN32
- COMMON_API inline int rint(float X) {
-	 return ((X)>0)?((int)(X+0.5)):((int)(X-0.5));
- }
-#endif
+
  // ran1 function declaration (from numerical recipes in C)
 COMMON_API double ran1(long *);
 };

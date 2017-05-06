@@ -38,6 +38,7 @@ public:
  //! \sa dwtmode()
  //!
  MatWaveWavedec(const string &wname, const string &mode);
+ MatWaveWavedec(const string &wname);
  virtual ~MatWaveWavedec();
 
  //! Multi-level discrete 1D wavelet decomposition

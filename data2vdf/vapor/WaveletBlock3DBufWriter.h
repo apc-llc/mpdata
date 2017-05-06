@@ -105,6 +105,8 @@ public:
  //!
  int	WriteSlice(const float *slice);
 
+ virtual const float *GetDataRange() const { return (_dataRange); }
+
 protected:
 
 private:

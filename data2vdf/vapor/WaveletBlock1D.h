@@ -60,7 +60,6 @@ private:
  int	_bs;			// block dimensions in voxels
  int	_n;				// # filter coefficients
  int	_ntilde;		// # lifting coefficients
- int	_nthreads;		// # execution threads
 
  Lifting1D <float>	*_lift;	// lifting method wavelet transform
  float		*_liftbuf;	// scratch space for lifting method

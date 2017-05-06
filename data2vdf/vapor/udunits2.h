@@ -1,22 +1,69 @@
 /*
- * Copyright 2008, 2009 University Corporation for Atmospheric Research
+ * Copyright 2013 University Corporation for Atmospheric Research
  *
- * This file is part of the UDUNITS-2 package.  See the file LICENSE
+ * This file is part of the UDUNITS-2 package.  See the file COPYRIGHT
  * in the top-level source-directory of the package for copying and
  * redistribution conditions.
  */
 #ifndef UT_UNITS2_H_INCLUDED
 #define UT_UNITS2_H_INCLUDED
-#include "vapor/common.h"
+
 #include <stdarg.h>
 #include <stddef.h>
+#include "vapor/common.h"
+
+#ifdef _MSC_VER
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <io.h>
+
+#define _USE_MATH_DEFINES
+
+/* Define a bunch of variables to use the ISO C++ conformant name instead
+   of the POSIX name. This quiets a lot of the warnings thrown by MSVC. */
+#define read _read
+#define open _open
+#define close _close
+#define strdup _strdup
+#define strcasecmp stricmp
+#define stricmp _stricmp
+#define isatty _isatty
+
+//We must accomodate the lack of snprintf in MSVC.
+//c99_snprintf is defined in c99_snprintf.c, in lib/.
+#define snprintf _snprintf
+
+int c99_snprintf(
+   char* str,
+     size_t size,
+     const char* format,
+     ...);
+
+int c99_vsnprintf(
+char* str,
+  size_t size,
+  const char* format,
+  va_list ap);
+  
+#endif
+
+/* If we are working in Visual Studio and have a
+   shared library, we will need to do some slight-of-hand
+   in order to make it generate a proper export library.
+*/
+
+#define MSC_EXTRA __declspec(dllexport)
+
+#define EXTERNL MSC_EXTRA extern
+
 
 #include "converter.h"
 
 typedef struct ut_system	ut_system;
 typedef union ut_unit		ut_unit;
 
-typedef enum {
+enum utStatus {
     UT_SUCCESS = 0,	/* Success */
     UT_BAD_ARG,	        /* An argument violates the function's contract */
     UT_EXISTS,		/* Unit, prefix, or identifier already exists */
@@ -33,14 +80,16 @@ typedef enum {
     UT_OPEN_ENV,	/* Can't open environment-specified unit database */
     UT_OPEN_DEFAULT,	/* Can't open installed, default, unit database */
     UT_PARSE		/* Error parsing unit specification */
-} ut_status;
+};
+typedef enum utStatus          ut_status;
 
-typedef enum {
+enum utEncoding {
     UT_ASCII = 0,
     UT_ISO_8859_1 = 1,
     UT_LATIN1 = UT_ISO_8859_1,
     UT_UTF8 = 2
-} ut_encoding;
+};
+typedef enum utEncoding        ut_encoding;
 
 #define UT_NAMES	4
 #define UT_DEFINITION	8
@@ -49,7 +98,7 @@ typedef enum {
 /*
  * Data-structure for a visitor to a unit:
  */
-typedef struct {
+typedef struct ut_visitor {
     /*
      * Visits a basic-unit.  A basic-unit is a base unit like "meter" or a non-
      * dimensional but named unit like "radian".
@@ -145,6 +194,22 @@ extern "C" {
  * Unit System:
  ******************************************************************************/
 
+
+/**
+ * Returns the pathname of the XML database.
+ *
+ * @param path      The pathname of the XML file or NULL.
+ * @param status    Status. One of UT_OPEN_ARG, UT_OPEN_ENV, or UT_OPEN_DEFAULT.
+ * @return          If "path" is not NULL, then it is returned; otherwise, the
+ *                  pathname specified by the environment variable
+ *                  UDUNITS2_XML_PATH is returned if set; otherwise, the
+ *                  compile-time pathname of the installed, default, unit
+ *                  database is returned.
+ */
+UDUNITS2_API const char*
+ut_get_path_xml(
+	const char*	path,
+	ut_status*  status);
 
 /*
  * Returns the unit-system corresponding to an XML file.  This is the usual way
@@ -465,7 +530,7 @@ ut_get_name(
  *	UT_EXISTS	"name" already maps to a different unit.
  *	UT_SUCCESS	Success.
  */
-ut_status
+UDUNITS2_API ut_status
 ut_map_name_to_unit(
     const char* const		name,
     const ut_encoding		encoding,

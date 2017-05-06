@@ -15,7 +15,13 @@ namespace VAPoR {
 class VDF_API Wrf2vdf : public VetsUtil::MyBase {
 public:
  Wrf2vdf();
- ~Wrf2vdf();
+ virtual ~Wrf2vdf();
+
+ void deleteObjects();
+ void GetVariables(const VDFIOBase *vdfio,
+              const DCReaderWRF *wrfData,
+              const vector <string> &in_varnames,
+              vector <string> &out_varnames);
 
  //! copy data set from source to VDC
  //!
@@ -23,7 +29,7 @@ public:
  //! implies failure, the destination VDC may be corrupt. A status 
  //! greater than 0 implies some variables were not copied
  //!
- int launchWrf2Vdf(int argc, char **argv);
+ int launchWrf2Vdf(int argc, char **argv, DCReaderWRF *optionalReader = NULL);
 
 private:
  string _progname;
@@ -66,12 +72,6 @@ private:
          int level,
          int lod);
 
-public:
- void deleteObjects();
- void GetVariables(const VDFIOBase *vdfio,
-              const DCReaderWRF *wrfData,
-              const vector <string> &in_varnames,
-              vector <string> &out_varnames);
 
 };
 

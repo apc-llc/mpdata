@@ -55,14 +55,14 @@ public:
 	// Transfer function has identical min,max map bounds, but
 	// Parent class has them potentially unequal.
     //
-	void setMinMapValue(float minVal) 
-    { setMinOpacMapValue(minVal); setMinColorMapValue(minVal);}
+	void setMinMapValue(float minVal) {
+		MapperFunctionBase::setMinMapValue(minVal);
+	}
 
-	void setMaxMapValue(float val)    
-    { setMaxOpacMapValue(val); setMaxColorMapValue(val); }
+	void setMaxMapValue(float val) {
+		MapperFunctionBase::setMaxMapValue(val);
+	}
 
-	float getMinMapValue() {return getMinColorMapValue();}
-	float getMaxMapValue() {return getMaxColorMapValue();}
 
 	int mapFloatToIndex(float f) { return mapFloatToColorIndex(f); }
 	float mapIndexToFloat(int indx) { return mapColorIndexToFloat(indx); }

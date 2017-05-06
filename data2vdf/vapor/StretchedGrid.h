@@ -190,7 +190,7 @@ private:
 
  float _GetValueNearestNeighbor(double x, double y, double z) const;
  float _GetValueLinear(double x, double y, double z) const;
-
+ float _GetValueQuadratic(double x, double y, double z) const;
 
 
 };

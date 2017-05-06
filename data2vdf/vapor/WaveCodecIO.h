@@ -466,8 +466,7 @@ private:
  int _threadStatus;
  size_t _NC_BUF_SIZE; //buffering disabled by default
  ReadWriteThreadObj **_rw_thread_objs;
- SignificanceMap **_sigmaps;
- vector <SignificanceMap **> _sigmapsThread;	// one set for each thread
+ vector < vector <SignificanceMap> > _sigmapsThread;// one set for each thread
  vector <size_t> _sigmapsizes;	// size of each encoded sig map
  Compressor *_compressor3D;	// 3D compressor
  Compressor *_compressor2DXY;

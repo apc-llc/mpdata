@@ -231,6 +231,15 @@ public:
  //
  void GetMap(const unsigned char **map, size_t *maplen);
 
+ //! Return the compressed representation of the significance map. The data 
+ //! returned are only suitable passing as an argument to the constructor.
+ //!
+ //! \param map[out] Encoded significance map data. Caller is 
+ //! responsible for allocating memory. The array \p map must be of 
+ //! size GetMapSize().
+ //
+ void GetMap(unsigned char *map);
+
  //
  //! Reinitialize the significance map with the map, \p map , returned from a 
  //! previous call to GetMap. 
@@ -283,6 +292,8 @@ public:
  //! \sa GetNextEntry()
  //
  void Sort();
+
+ SignificanceMap &operator=(const SignificanceMap& map);
 
  friend std::ostream &operator<<(
     std::ostream &o, const SignificanceMap &sigmap

@@ -37,6 +37,12 @@
 #define UDUNITS2_API __declspec(dllimport)
 #endif
 
+#ifdef GRIBAPI_EXPORTS
+#define GRIBAPI_API __declspec(dllexport)
+#else
+#define GRIBAPI_API __declspec(dllimport)
+#endif
+
 #ifdef JPEG_EXPORTS
 //Slightly different definitions for jpeg project:
 #     define JPEG_GLOBAL(type) __declspec(dllexport) type
@@ -56,6 +62,7 @@
 #define FLOW_API
 #define PARAMS_API
 #define RENDER_API
+#define GRIBAPI_API
 #define JPEG_GLOBAL(type) type
 //Assume all outside projects depending on JPEG are C++
 #ifdef JPEG_EXPORTS

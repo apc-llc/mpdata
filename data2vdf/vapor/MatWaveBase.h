@@ -47,6 +47,7 @@ public:
  //! \sa dwtmode()
  //!
  MatWaveBase(const string &wname, const string &mode);
+ MatWaveBase(const string &wname);
  virtual ~MatWaveBase();
 
  //! Set the discrete wavelet extension transform mode

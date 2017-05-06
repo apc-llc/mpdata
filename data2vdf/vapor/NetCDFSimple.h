@@ -83,6 +83,10 @@ public:
 	//
 	int GetAttType(string name) const;
 
+	//! Return the netCDF external data type for the variable
+	//!
+	int GetXType() const {return(_type); };
+
 	//! Return the netCDF variable ID for this variable
 	//
 	int GetVarID() const {return(_varid); };

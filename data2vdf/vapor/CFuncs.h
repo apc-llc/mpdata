@@ -38,18 +38,21 @@ COMMON_API const char	*Basename(const char *path);
 COMMON_API string Basename(const string &path);
 
 
-//! Return the directory component of a UNIX path name
-//!
-//! Re-implements the UNIX 'dirname' function. However, in this version
-//! the original pathname is not modfied -- the directory component of
-//! the path name is copied into caller-provided storage.
-//!
-//! \param[in] pathname Pointer to a null-terminated file path name
-//! \param[out] directory Contains parent directory of \p pathname
-//! \retval directory Returns \p directory parameter
-//!
-COMMON_API char   *Dirname(const char *pathname, char *directory);
 COMMON_API string Dirname(const string &path);
+
+COMMON_API string Catpath(string volume, string dir, string file);
+
+COMMON_API void Splitpath(
+	string path, string &volume, string &dir, string &file, bool nofile
+);
+
+COMMON_API bool IsAbsPath(string path);
+
+
+COMMON_API double GetTime();
+
+COMMON_API int    MkDirHier(const string &dir);
+
 
 
 };

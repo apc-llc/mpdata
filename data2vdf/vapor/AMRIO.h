@@ -321,9 +321,6 @@ private:
  string	_treeFileName;	// Currenly opened tree file name
  string	_dataFileName;	// Currenly opened amr data file name
 
- float	*_mins[MAX_LEVELS];	// min value contained in a block
- float	*_maxs[MAX_LEVELS];	// max value contained in a block
-
  int	_treeIsOpen;	// true if an AMR tree file is open
  int	_dataIsOpen;	// true if an AMR data file is open
  int	_treeWriteMode;	// true if file opened for writing

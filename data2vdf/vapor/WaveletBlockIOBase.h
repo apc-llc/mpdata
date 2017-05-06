@@ -242,7 +242,7 @@ public:
 	float   *voxels
  ) const;
 
- const float *GetDataRange() const {return (_dataRange);}
+ virtual const float *GetDataRange() const { return (_dataRange); }
 
  void    GetValidRegion(
 	size_t min[3], size_t max[3], int reflevel

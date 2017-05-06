@@ -319,6 +319,17 @@ public:
  //
  virtual bool IsTimeVarying(string varname) const;
 
+ //! Return the netCDF external data type a variable
+ //!
+ //! Returns the nc_type of the named variable 
+ //!
+ //! \param[in] varname The name of the variable to query.
+ //!
+ //! \retval If a variable named by \p name does not exist, a
+ //! negative value is returned.
+ //!
+ int GetXType(string varname) const;
+
  //! Return a list of available attribute's names
  //!
  //! Returns a vector of all attribute names for the
@@ -568,6 +579,11 @@ public:
  //!
  virtual int Read(size_t start[], size_t count[], float *data, int fd=0);
  virtual int Read(size_t start[], size_t count[], int *data, int fd=0);
+ virtual int Read(
+	std::vector <size_t> start, std::vector <size_t> count, float *data, int fd=0);
+ virtual int Read(
+	std::vector <size_t> start, std::vector <size_t> count, int *data, int fd=0
+ );
 
  virtual int Read(float *data, int fd=0);
  virtual int Read(char *data, int fd=0);
@@ -831,6 +847,8 @@ private:
  // Open file data
  //
  std::map<int, NetCDFCollection::fileHandle> _ovr_table;
+
+ void ReInitialize();
 
  int _InitializeTimesMap(
     const std::vector <string> &files, 

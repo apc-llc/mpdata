@@ -27,7 +27,7 @@ private:
  VetsUtil::OptionParser::Boolean_T _help;
  VetsUtil::OptionParser::Boolean_T _quiet;
  VetsUtil::OptionParser::Boolean_T _debug;
-
+ int _numTS;
 
  void Usage(VetsUtil::OptionParser &op, const char * msg);
  void populateVariables(std::vector<std::string> vars, 

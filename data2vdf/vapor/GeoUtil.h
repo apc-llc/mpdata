@@ -28,6 +28,12 @@ public:
  static void ShiftLon(
 	const double *srclon, int nx, double *dstlon
  );
+ static void ShiftLon(
+	const float *srclon, int nx, int ny, float *dstlon
+ );
+ static void ShiftLon(
+	const double *srclon, int nx, int ny, double *dstlon
+ );
 
  //! Calculate west-most and east-most extents for a grid of 
  //! longitudinal values
@@ -93,11 +99,29 @@ public:
 	const double *lon, int ny, double &latsouth, double &latnorth
  );
 
-private:
 
- static void _minmax(
-	const float *a, int n, int stride, float &min, float &max
+ //! Extract boundary points from a 2D grid
+ //!
+ //! This method walks a 2D array, \p a, in counter-clockwise order, visiting
+ //! each boundary grid point exactly once, copying the value
+ //! to the array \p bdry. A total of 2*nx + 2*ny - 4 grid points are
+ //! copied.
+ //!
+ //! \param[in] a An 2D array dimensioned \p nx by \p ny
+ //! \param[in] nx	dimension of fastest moving coordinate
+ //! \param[in] ny	dimension of slowest moving coordinate
+ //! \param[output] bdry Output array containing the boundary values
+ //! of \p a. The number of elements copied to \p bdry is 
+ //! 2 * \p nx + 2 * \p ny - 4.
+ //
+ static void ExtractBoundary(
+    const float *a, int nx, int ny, float *bdry
  );
+ static void ExtractBoundary(
+    const double *a, int nx, int ny, double *bdry
+ );
+
+private:
 
 };
 };

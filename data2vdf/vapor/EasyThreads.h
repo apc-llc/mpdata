@@ -2,6 +2,8 @@
 #ifndef	_EasyThreads_h_
 #define	_EasyThreads_h_
 
+#include <vector>
+
 #ifndef WIN32
 #include <pthread.h>
 #else
@@ -19,6 +21,7 @@ public:
 
  EasyThreads(int nthreads);
  ~EasyThreads();
+ int	ParRun(void *(*start)(void *), std::vector <void *> arg);
  int	ParRun(void *(*start)(void *), void **arg);
  int	Barrier();
  int	MutexLock();

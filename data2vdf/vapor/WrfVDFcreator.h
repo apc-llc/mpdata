@@ -14,7 +14,7 @@ namespace VAPoR {
 class VDF_API wrfvdfcreate : public VetsUtil::MyBase {
 public:
  wrfvdfcreate();
- ~wrfvdfcreate();
+ virtual ~wrfvdfcreate();
 int launchVdfCreate(int argc, char **argv);
 
 private:

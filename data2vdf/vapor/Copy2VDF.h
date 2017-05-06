@@ -23,7 +23,7 @@ public:
  //! implies failure, the destination VDC may be corrupt. A status 
  //! greater than 0 implies some variables were not copied
  //!
-int launch2vdf(int argc, char **argv, string dataType);
+int launch2vdf(int argc, char **argv, string dataType, DCReader *myReader=NULL);
 
 private:
  string _progname;

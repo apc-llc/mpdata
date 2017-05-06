@@ -155,7 +155,7 @@ void SetFlagDirty(const string& flag);
 //! Method for obtaining the name and/or tag associated with the instance
 //!
 
-const string& GetName() {return _paramsBaseName;}
+const string& GetName() const {return _paramsBaseName;}
 //!	
 //! Method for obtaining the type Id associated with a ParamsBase instance
 //! \retval int ParamsBase TypeID for ParamsBase instance 

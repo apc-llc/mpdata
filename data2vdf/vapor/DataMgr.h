@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <iostream>
 #include <vapor/MyBase.h>
 #include <vapor/BlkMemMgr.h>
 #include <vapor/common.h>
@@ -19,7 +20,6 @@
 
 namespace VAPoR {
 class PipeLine;
-
 
 //
 //! \class DataMgr
@@ -93,7 +93,7 @@ public:
 
  //! \copydoc _GetExtents()
  //
- virtual vector<double> GetExtents(size_t ts = 0) const ;
+ virtual vector<double> GetExtents(size_t ts = 0);
 
  //! \copydoc _GetNumTimeSteps()
  //
@@ -209,7 +209,7 @@ public:
  //! if the region can not be extracted.
  //! \sa NewPipeline(), GetErrMsg()
  //
- RegularGrid   *GetGrid(
+virtual RegularGrid   *GetGrid(
     size_t ts,
     string varname,
     int reflevel,
@@ -467,6 +467,31 @@ public:
  //! \sa GetCoordinateVariables()
  //
  virtual bool IsCoordinateVariable(string varname) const;
+
+ //! Print out contents of data cache
+ //!
+ //! Debugging method for dumping out the contents of the data cache
+ //!
+ void PrintCache(std::ostream &o);
+
+ //! Set the default interpolation order used by RegularGrid objects
+ //! returned by the DataMgr.
+ //!
+ //! This method sets the default interpolation order for any returned
+ //! RegularGrid class objects by passing \p order to 
+ //! RegularGrid::SetInterpolationOrder();
+ //!
+ //! \param[in] order Interpolation order passed to 
+ //! RegularGrid::SetInterpolationOrder()
+ //!
+ //! \sa GetInterpolationOrder()
+ //!
+ void SetInterpolationOrder(int order) {_interpolationOrder = order;}
+
+ //! Return the default interpolation order
+ //! \sa SetInterpolationOrder()
+ //!
+ int GetInterpolationOrder() const {return(_interpolationOrder); }
 
 protected:
 
@@ -869,6 +894,7 @@ protected:
  virtual int	_CloseVariable() = 0;
 
 private:
+ int _interpolationOrder;
 
  size_t _mem_size;
 
@@ -937,6 +963,7 @@ private:
 	void Clear() {_cache.clear(); }
 
 
+
  private:
 
 	class var_info {
@@ -952,6 +979,7 @@ private:
  };
 
  VarInfoCache _VarInfoCache;
+ std::map <size_t, vector <double> > _extentsCache;
 
  float	*get_region_from_cache(
 	size_t ts,

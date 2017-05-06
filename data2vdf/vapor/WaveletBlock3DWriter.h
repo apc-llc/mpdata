@@ -117,6 +117,7 @@ public:
 protected:
 
  void _GetDataRange(float range[2]) const;
+ float _dataRange[2];
 
 private:
 
@@ -126,7 +127,6 @@ private:
  float	*zero_block_c;	// a block of zero data for padding
  size_t _block_size;
 
- float _dataRange[2];
 
  int	write_slabs(
 	const float *two_slabs,

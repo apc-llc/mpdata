@@ -184,9 +184,8 @@ private:
  float **_coords;
  int _varying_dim;
  double _extents[6];
- double _zcellmin;	// Minimum grid spacing along Z axis
- bool _zcellmin_cache;	// _zcellmin value is valid
 
+ double _GetValueLinear(double x, double y, double z) const;
  void _GetUserExtents(double extents[6]) const;
  void _GetBoundingBox(
     const size_t min[3],
@@ -194,6 +193,9 @@ private:
     double extents[6]
  ) const;
  double _GetVaryingCoord(size_t i, size_t j, size_t k) const;
+
+ //double verticalLinearInterpolation(double x, double y, double z) const;
+ //double quadraticInterpolation(double x, double y, double z) const;
 
  double _interpolateVaryingCoord(
 	size_t i0, size_t j0, size_t k0,

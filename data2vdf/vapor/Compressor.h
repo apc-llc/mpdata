@@ -49,6 +49,10 @@ public:
 	std::vector <size_t> dims,
 	const string &wname, const string &mode
  );
+ Compressor(
+	std::vector <size_t> dims,
+	const string &wname
+ );
 
  ~Compressor();
 
@@ -127,20 +131,16 @@ public:
  //! \param[out] sigmaps An array of significance maps, one map for
  //! each coefficient collection, S<sub>i</sub>
  //!
- //! \param[in] n The number of significance maps. Note, \n must be the
- //! same size as the vector \p dst_arr_lens
- //! 
- //!
  //! \retval status A negative value indicates failure
  //! \sa SignificanceMap, KeepAppOnOff(), Compress()
  //
  int Decompose(
 	const float *src_arr, float *dst_arr, const vector <size_t> &dst_arr_lens,
-	SignificanceMap **sigmaps, int n
+	vector <SignificanceMap > &sigmaps
  );
  int Decompose(
 	const double *src_arr, double *dst_arr, const vector <size_t> &dst_arr_lens,
-	SignificanceMap **sigmaps, int n
+	vector <SignificanceMap > &sigmaps
  );
 
  //! Reconstruct a signal decomposed with Decompose()
@@ -171,8 +171,6 @@ public:
  //! \param[in] sigmaps An array of significance maps previosly returned
  //! by Decompose()
  //!
- //! \param[in] n The number of signficance maps in \p sigmaps
- //!
  //! \param[in] l The refinement level. \p l must be in the range -1 to 
  //! max, where max is the value returned by GetNumLevels(). If \p is -1
  //! its value will be set to max. A value of zero coresponds to the
@@ -183,11 +181,11 @@ public:
  //!
  int Reconstruct(
 	const float *src_arr, float *dst_arr, 
-	SignificanceMap **sigmaps, int n, int l
+	vector <SignificanceMap > &sigmaps, int l
  );
  int Reconstruct(
 	const double *src_arr, double *dst_arr, 
-	SignificanceMap **sigmaps, int n, int l
+	vector <SignificanceMap > &sigmaps, int l
  );
 
  //! Return true if the given grid array is compressible 
@@ -359,6 +357,16 @@ public:
  //!
  double &Epsilon() {return (_epsilon); };
 
+ static bool CompressionInfo(
+	vector <size_t> dims, const string wavename,
+	bool keepapp, size_t &nlevels, size_t &maxcratio
+ );
+
+
+ friend std::ostream &operator<<(
+    std::ostream &o, const Compressor &rhs
+ );
+
 private:
 
 	vector <size_t> _dims;	// dimensions of array
@@ -378,6 +386,8 @@ private:
 	double _clamp_min;
 	double _clamp_max;
 	double _epsilon;
+
+	void _Compressor(std::vector <size_t> dims);
 
 };
 

@@ -18,7 +18,7 @@ namespace VAPoR {
 //! wavelet coefficients that define a particular wavelet. All 
 //! filters are normalized.
 //!
-class WaveFiltBase : public VetsUtil::MyBase {
+class WaveFiltBase {
 
 public:
 	WaveFiltBase();

@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <vapor/MyBase.h>
 #include <vapor/MetadataVDC.h>
+#include <vapor/CFuncs.h>
 
 namespace VAPoR {
 
@@ -67,8 +68,8 @@ public:
  //!
  double	GetSeekTimer() const { return(_seek_timer_acc); };
  void SeekTimerReset() {_seek_timer_acc = 0;};
- void SeekTimerStart() {_seek_timer = GetTime();};
- void SeekTimerStop() {_seek_timer_acc += (GetTime() - _seek_timer);};
+ void SeekTimerStart() {_seek_timer = VetsUtil::GetTime();};
+ void SeekTimerStop() {_seek_timer_acc += (VetsUtil::GetTime() - _seek_timer);};
 
  //! Return the write timer
  //!
@@ -83,8 +84,6 @@ public:
  //! spent transforming data. 
  //!
  double	GetXFormTimer() const { return(_xform_timer_acc); };
-
- double GetTime() const;
 
  virtual int OpenVariableRead(
     size_t timestep, const char *varname, int reflevel=0, int lod=0
@@ -185,16 +184,16 @@ protected:
  };
 
  void _ReadTimerReset() {_read_timer_acc = 0;};
- void _ReadTimerStart() {_read_timer = GetTime();};
- void _ReadTimerStop() {_read_timer_acc += (GetTime() - _read_timer);};
+ void _ReadTimerStart() {_read_timer = VetsUtil::GetTime();};
+ void _ReadTimerStop() {_read_timer_acc += (VetsUtil::GetTime() - _read_timer);};
 
  void _WriteTimerReset() {_write_timer_acc = 0;};
- void _WriteTimerStart() {_write_timer = GetTime();};
- void _WriteTimerStop() {_write_timer_acc += (GetTime() - _write_timer);};
+ void _WriteTimerStart() {_write_timer = VetsUtil::GetTime();};
+ void _WriteTimerStop() {_write_timer_acc += (VetsUtil::GetTime() - _write_timer);};
 
  void _XFormTimerReset() {_xform_timer_acc = 0;};
- void _XFormTimerStart() {_xform_timer = GetTime();};
- void _XFormTimerStop() {_xform_timer_acc += (GetTime() - _xform_timer);};
+ void _XFormTimerStart() {_xform_timer = VetsUtil::GetTime();};
+ void _XFormTimerStop() {_xform_timer_acc += (VetsUtil::GetTime() - _xform_timer);};
 
  //
  // The Mask* methods are used to support missing data. If no missing 
@@ -277,10 +276,6 @@ private:
  void _downsample(const BitMask &bm0, BitMask &bm1, int l0, int l1) const;
 
 };
-
-
- int	MkDirHier(const string &dir);
- void	DirName(const string &path, string &dir);
 
 }
 

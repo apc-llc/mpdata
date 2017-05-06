@@ -45,7 +45,7 @@ public:
  }
 
  virtual string GetGridType() const {
-	return("layered"); 
+	return(_dims[2] == 1 ? "regular" : "layered");
  }
 
  virtual std::vector <double> GetExtents(size_t ts = 0) const;
@@ -134,6 +134,7 @@ public:
  virtual int Read(float *data);
 
  virtual bool VariableExists(size_t ts, string varname, int i0=0, int i1=0) const {
+	ts = _timeLookup[ts];
     return(_ncdfc->VariableExists(ts, varname));
  }
 
@@ -146,6 +147,7 @@ public:
     size_t ts, double lon_exts[2], double lat_exts[2]
  ) const {
 	double dummy[4];
+	ts = _timeLookup[ts];
 	(void) _GetLatLonExtentsCorners(
 		_ncdfc, ts, lon_exts, lat_exts, dummy, dummy
 	);
@@ -196,6 +198,7 @@ private:
  std::vector <string> _vars2dExcluded;
  std::vector <string> _timeStamps;
  std::vector <double> _times;
+ std::vector <size_t> _timeLookup;
  NetCDFCollection *_ncdfc;
  float *_sliceBuffer;	// buffer for reading data
  int _ovr_fd;

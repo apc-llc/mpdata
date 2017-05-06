@@ -31,6 +31,7 @@ public:
  //! \sa dwtmode()
  //!
  MatWaveDwt(const string &wname, const string &mode);
+ MatWaveDwt(const string &wname);
  virtual ~MatWaveDwt();
 
  //! Single-level discrete 1D wavelet transform

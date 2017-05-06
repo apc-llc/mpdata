@@ -9,7 +9,14 @@
 namespace VetsUtil {
 
 COMMON_API std::string GetAppPath(
-	const string &app, const string &name, const vector <string> &paths);
+	const string &app, const string &name, const vector <string> &paths,
+#ifdef _WINDOWS
+	//Windows default is backwards slash for separator
+	bool forwardSeparator = false
+#else
+	bool forwardSeparator = true
+#endif
+	);
 
 };
 

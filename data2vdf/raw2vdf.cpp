@@ -22,7 +22,6 @@
 //			Vapor Data Collection
 //
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -34,6 +33,7 @@
 #include <vapor/WaveletBlock3DBufWriter.h>
 #include <vapor/WaveletBlock3DRegionWriter.h>
 #include <vapor/WaveCodecIO.h>
+#include <vapor/CFuncs.h>
 #ifdef WIN32
 #include "windows.h"
 #endif
@@ -51,6 +51,10 @@ struct opt_t {
 	int level;
 	int lod;
 	int nthreads;
+	int skip;
+	float min;
+	float max;
+	OptionParser::Boolean_T eightBit;
 	OptionParser::Boolean_T	help;
 	OptionParser::Boolean_T	debug;
 	OptionParser::Boolean_T	quiet;
@@ -62,50 +66,56 @@ struct opt_t {
 	int staggeredDim;
 };
 
-namespace {
-	opt_t opt;
+static opt_t opt;
 
-	OptionParser::OptDescRec_T	set_opts[] = {
-		{"ts",		1, 	"0","Timestep of data file starting from 0"},
-		{"varname",	1, 	"var1",	"Name of variable"},
-		{"level",	1, 	"-1",	"Refinement levels saved. 0 => coarsest, 1 => "
-			"next refinement, etc. -1 => all levels defined by the .vdf file"},
-		{"lod",	1, 	"-1",	"Compression levels saved. 0 => coarsest, 1 => "
-			"next refinement, etc. -1 => all levels defined by the .vdf file"},
-		{"nthreads",1, 	"0",	"Number of execution threads (0 => # processors)"},
-		{"help",	0,	"",	"Print this message and exit"},
-		{"debug",	0,	"",	"Enable debugging"},
-		{"quiet",	0,	"",	"Operate quietly"},
-		{"swapbytes",	0,	"",	"Swap bytes in raw data as they are read from disk"},
-		{"dbl",	0,	"",	"Input data are 64-bit floats"},
-		{"xregion", 1, "-1:-1", "X dimension subregion bounds (min:max)"},
-		{"yregion", 1, "-1:-1", "Y dimension subregion bounds (min:max)"},
-		{"zregion", 1, "-1:-1", "Z dimension subregion bounds (min:max)"},
-		{"stagdim", 1, "0", "1, 2, or 3 indicate staggered in x, y, or z"},
-		{NULL}
-	};
+static OptionParser::OptDescRec_T	set_opts[] = {
+	{"ts",		1, 	"0","Timestep of data file starting from 0"},
+	{"varname",	1, 	"var1",	"Name of variable"},
+	{"level",	1, 	"-1",	"Refinement levels saved. 0 => coarsest, 1 => "
+		"next refinement, etc. -1 => all levels defined by the .vdf file"},
+	{"lod",	1, 	"-1",	"Compression levels saved. 0 => coarsest, 1 => "
+		"next refinement, etc. -1 => all levels defined by the .vdf file"},
+	{"nthreads",1, 	"0",	"Number of execution threads (0 => # processors)"},
+	{"skip",1, 	"0",	"Seek past n bytes before reading from input"},
+	{"help",	0,	"",	"Print this message and exit"},
+	{"debug",	0,	"",	"Enable debugging"},
+	{"quiet",	0,	"",	"Operate quietly"},
+	{"swapbytes",	0,	"",	"Swap bytes in raw data as they are read from disk"},
+	{"dbl",	0,	"",	"Input data are 64-bit floats"},
+	{"eightBit", 0, "", "Input data are 8 bit integers"},
+	{"min", 1, "0.0", "Minimum value of input variable (ignored unless -eightBit is declared"},
+	{"max", 1, "0.0", "Maximum value of input variable (ignored unless -eightBit is declared"},
+	{"xregion", 1, "-1:-1", "X dimension subregion bounds (min:max)"},
+	{"yregion", 1, "-1:-1", "Y dimension subregion bounds (min:max)"},
+	{"zregion", 1, "-1:-1", "Z dimension subregion bounds (min:max)"},
+	{"stagdim", 1, "0", "1, 2, or 3 indicate staggered in x, y, or z"},
+	{NULL}
+};
 
 
-	OptionParser::Option_T	get_options[] = {
-		{"ts", VetsUtil::CvtToInt, &opt.ts, sizeof(opt.ts)},
-		{"varname", VetsUtil::CvtToString, &opt.varname, sizeof(opt.varname)},
-		{"level", VetsUtil::CvtToInt, &opt.level, sizeof(opt.level)},
-		{"lod", VetsUtil::CvtToInt, &opt.lod, sizeof(opt.lod)},
-		{"nthreads", VetsUtil::CvtToInt, &opt.nthreads, sizeof(opt.nthreads)},
-		{"help", VetsUtil::CvtToBoolean, &opt.help, sizeof(opt.help)},
-		{"debug", VetsUtil::CvtToBoolean, &opt.debug, sizeof(opt.debug)},
-		{"quiet", VetsUtil::CvtToBoolean, &opt.quiet, sizeof(opt.quiet)},
-		{"swapbytes", VetsUtil::CvtToBoolean, &opt.swapbytes, sizeof(opt.swapbytes)},
-		{"dbl", VetsUtil::CvtToBoolean, &opt.dbl, sizeof(opt.dbl)},
-		{"xregion", VetsUtil::CvtToIntRange, &opt.xregion, sizeof(opt.xregion)},
-		{"yregion", VetsUtil::CvtToIntRange, &opt.yregion, sizeof(opt.yregion)},
-		{"zregion", VetsUtil::CvtToIntRange, &opt.zregion, sizeof(opt.zregion)},
-		{"stagdim", VetsUtil::CvtToInt, &opt.staggeredDim, sizeof(opt.staggeredDim)},
-		{NULL}
-	};
+static OptionParser::Option_T	get_options[] = {
+	{"ts", VetsUtil::CvtToInt, &opt.ts, sizeof(opt.ts)},
+	{"varname", VetsUtil::CvtToString, &opt.varname, sizeof(opt.varname)},
+	{"level", VetsUtil::CvtToInt, &opt.level, sizeof(opt.level)},
+	{"lod", VetsUtil::CvtToInt, &opt.lod, sizeof(opt.lod)},
+	{"nthreads", VetsUtil::CvtToInt, &opt.nthreads, sizeof(opt.nthreads)},
+	{"skip", VetsUtil::CvtToInt, &opt.skip, sizeof(opt.skip)},
+	{"help", VetsUtil::CvtToBoolean, &opt.help, sizeof(opt.help)},
+	{"debug", VetsUtil::CvtToBoolean, &opt.debug, sizeof(opt.debug)},
+	{"quiet", VetsUtil::CvtToBoolean, &opt.quiet, sizeof(opt.quiet)},
+	{"swapbytes", VetsUtil::CvtToBoolean, &opt.swapbytes, sizeof(opt.swapbytes)},
+	{"dbl", VetsUtil::CvtToBoolean, &opt.dbl, sizeof(opt.dbl)},
+	{"eightBit", VetsUtil::CvtToBoolean, &opt.eightBit, sizeof(opt.eightBit)},
+	{"min", VetsUtil::CvtToFloat, &opt.min, sizeof(opt.min)},
+	{"max", VetsUtil::CvtToFloat, &opt.max, sizeof(opt.max)},
+	{"xregion", VetsUtil::CvtToIntRange, &opt.xregion, sizeof(opt.xregion)},
+	{"yregion", VetsUtil::CvtToIntRange, &opt.yregion, sizeof(opt.yregion)},
+	{"zregion", VetsUtil::CvtToIntRange, &opt.zregion, sizeof(opt.zregion)},
+	{"stagdim", VetsUtil::CvtToInt, &opt.staggeredDim, sizeof(opt.staggeredDim)},
+	{NULL}
+};
 
-	const char	*ProgName;
-}
+static const char	*ProgName;
 
 	
 void    swapbytes(
@@ -127,14 +137,21 @@ void    swapbytes(
 	}
 }
 
+// Add dummy variable to determine template type
+// Delete float/double shuffling and replace with memcpy
+// special casing for element_sz gets replaced with sizeof(T)
+template <class T>
 int read_next_slice(
+	T type,
 	const VDFIOBase *vdfio,
 	const size_t dim[2],
 	FILE	*fp, 
 	float *slice,
 	float *read_timer
 ) {
-	static unsigned char *buffer = NULL;
+
+	static T *buffer = NULL;
+	static float *writeBuffer = NULL;
 	static bool first = true;
 
 	double t0;
@@ -142,16 +159,15 @@ int read_next_slice(
 	// Allocate a buffer large enough to hold one slice of data,
 	// plus one if staggered.
 	//
-	int element_sz;
-	if (opt.dbl) element_sz = sizeof(double);
-	else element_sz = sizeof (float);
+	int element_sz = sizeof(T);
 
 	//dimx and dimy are the size of the input data:
 	size_t dimx,dimy;
 	dimx = (opt.staggeredDim == 1) ? dim[0]+1 : dim[0];
 	dimy = (opt.staggeredDim == 2) ? dim[1]+1 : dim[1];
 	size_t read_sz = dimx*dimy;
-	unsigned char *readbuffer;
+	T *readbuffer;
+	float *writePtr;
 
 	if (first) {
 		*read_timer = 0;
@@ -160,9 +176,12 @@ int read_next_slice(
 		//
 		if (opt.staggeredDim == 3) read_sz *= 2;
 
-		
-		buffer = new unsigned char [read_sz*element_sz];
+		buffer = new T [read_sz];
 		readbuffer = buffer;
+		
+		writeBuffer = new float[read_sz];
+		writePtr = writeBuffer;
+
 		first = false;
 	}
 	else {
@@ -172,14 +191,16 @@ int read_next_slice(
 		// of previous slice are dim[0]*dim[1]*sizeof(*slice)
 		//
 		if (opt.staggeredDim == 3) {
-			readbuffer = buffer + dim[0]*dim[1]*sizeof(*slice);
+			readbuffer = buffer + dim[0]*dim[1];
+			writePtr = writeBuffer + dim[0]*dim[1];
 		}
 		else {
 			readbuffer = buffer;
+			writePtr = writeBuffer;
 		}
 	}
 
-	t0 = vdfio->GetTime();
+	t0 = GetTime();
 
 	int rc = fread(readbuffer, element_sz, read_sz, fp);
 	if (rc != read_sz) {
@@ -191,7 +212,7 @@ int read_next_slice(
 		return(-1);
 	}
 
-	*read_timer += vdfio->GetTime() - t0;
+	*read_timer += GetTime() - t0;
 
 	// Swap bytes in place if needed
 	//
@@ -199,14 +220,24 @@ int read_next_slice(
 		swapbytes(readbuffer, element_sz, read_sz); 
 	}
 
-	// Convert data from double to float if needed.
-	if (opt.dbl) {
-		float *fptr = (float *) readbuffer;
-		double *dptr = (double *) readbuffer;
-		for(int i=0; i<read_sz; i++) *fptr++ = (float) *dptr++;
+	// Apply scale factors to eight bit data 
+	// 
+	if (opt.eightBit) {
+		T *readPtr = (T*) buffer;
+		float scale = ((float)opt.max-(float)opt.min)/256.f;
+		for(int i=0; i<read_sz; i++) {
+			*writePtr = opt.min + (*readPtr)*scale;
+			writePtr++;
+			readPtr++;
+		}
 	}
+	// Otherwise just copy values straight into writeBuffer
+	//
+	else std::copy(readbuffer, readbuffer+read_sz, writePtr);
 
-	float* fslice = (float*) readbuffer;
+	// Apply averageing for staggered dimensions
+	//
+	float* fslice = writePtr;
 	if (opt.staggeredDim == 1){
 		size_t inposn = 0;
 		//Loop over output positions:
@@ -235,10 +266,9 @@ int read_next_slice(
 		}
 	}
 	else if (opt.staggeredDim == 3) {
-
 		//Average old and new slices:
 		//
-		float *old_fslice = (float*) buffer;
+		float *old_fslice = writeBuffer;
 		fslice = old_fslice + dim[0]*dim[1];
 		float *new_fslice = fslice;
 
@@ -312,7 +342,12 @@ void	process_volume(
 			cout << "Reading slice # " << z << endl;
 		}
 
-		rc = read_next_slice(vdfio, dim3d, fp, slice, read_timer);
+		float fl = 0.0;
+		unsigned char uc = 0;
+		double db = 0;
+		if (opt.eightBit) rc = read_next_slice( uc, vdfio, dim3d, fp, slice, read_timer);
+		else if (opt.dbl) rc = read_next_slice(db, vdfio, dim3d, fp, slice, read_timer);
+		else rc = read_next_slice(fl, vdfio, dim3d, fp, slice, read_timer);
 		if (rc<0) exit(1);
 
 		rc = vdfio->WriteSlice(slice);
@@ -409,8 +444,12 @@ float *read_region(
 		if (z%10== 0 && ! opt.quiet) {
 			cout << "Reading slice # " << z << endl;
 		}
-
-		rc = read_next_slice(vdfio, dim3d, fp, slice, read_timer);
+		float fl=0;
+		unsigned char uc=0;
+		double db=0;
+		if (opt.eightBit) rc = read_next_slice(uc, vdfio, dim3d, fp, slice, read_timer);
+		else if (opt.dbl) rc = read_next_slice(db, vdfio, dim3d, fp, slice, read_timer);
+		else rc = read_next_slice(fl, vdfio, dim3d, fp, slice, read_timer);
 		if (rc<0) exit(1);
 
 		slice += dim3d[0]*dim3d[1];
@@ -499,28 +538,29 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	}
 
 	if (opt.help) {
-		cerr << "Usage: " << ProgName << " [options] metafile datafile" << endl;
+		cerr << "Usage: " << ProgName << " [options] vdfFile rawFile" << endl;
 		op.PrintOptionHelp(stderr);
 		exit(0);
 	}
-
+	
 	if (argc != 3) {
-		cerr << "Usage: " << ProgName << " [options] metafile datafile" << endl;
+		cerr << "Usage: " << ProgName << " [options] vdfFile rawFile" << endl;
 		op.PrintOptionHelp(stderr);
 		exit(1);
 	}
+
 
 	metafile = argv[1];	// Path to a vdf file
 	datafile = argv[2];	// Path to raw data file 
 
     if (opt.debug) MyBase::SetDiagMsgFilePtr(stderr);
 
-	std::unique_ptr<WaveletBlockIOBase> wbwriter3D;
-	std::unique_ptr<WaveCodecIO> wcwriter;
+	WaveletBlockIOBase	*wbwriter3D = NULL;
+	WaveCodecIO	*wcwriter = NULL;
 	VDFIOBase *vdfio = NULL;
 
-	int min[3] = {opt.xregion.min, opt.yregion.min, opt.zregion.min};
-	int max[3] = {opt.xregion.max, opt.yregion.max, opt.zregion.max};
+	size_t min[3] = {opt.xregion.min, opt.yregion.min, opt.zregion.min};
+	size_t max[3] = {opt.xregion.max, opt.yregion.max, opt.zregion.max};
 
 	// Determine if variable is 3D
 	//
@@ -545,16 +585,16 @@ extern "C" int raw2vdf(int argc, char **argv) {
 			max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
 			vtype == Metadata::VAR3D) {
 
-			wbwriter3D.reset(new WaveletBlock3DBufWriter(metadata));
+			wbwriter3D = new WaveletBlock3DBufWriter(metadata);
 		}
 		else {
-			wbwriter3D.reset(new WaveletBlock3DRegionWriter(metadata));
+			wbwriter3D = new WaveletBlock3DRegionWriter(metadata);
 		}
-		vdfio = wbwriter3D.get();
+		vdfio = wbwriter3D;
 	} 
 	else {
-		wcwriter.reset(new WaveCodecIO(metadata, opt.nthreads));
-		vdfio = wcwriter.get();
+		wcwriter = new WaveCodecIO(metadata, opt.nthreads);
+		vdfio = wcwriter;
 	}
 	if (vdfio->GetErrCode() != 0) {
 		exit(1);
@@ -566,8 +606,16 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		exit(1);
 	}
 
+	if (opt.skip) {
+		int rc = fseek(fp, opt.skip, SEEK_SET);
+		if (rc<0) {	
+			MyBase::SetErrMsg("Could not seek file \"%s\" : %M", datafile);
+			exit(1);
+		}
+	}
 
-	double t0 = vdfio->GetTime();
+
+	double t0 = GetTime();
 
 	if (min[0] == min[1] && min[1] == min[2] && min[2] == max[0] &&
 		max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
@@ -586,9 +634,7 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	}
 
 
-	timer = vdfio->GetTime() - t0;
-
-	fclose(fp);
+	timer = GetTime() - t0;
 
 	if (! opt.quiet) {
 		const float *range = vdfio->GetDataRange();
@@ -600,6 +646,6 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		fprintf(stdout, "min and max values of data output: %g, %g\n",range[0], range[1]);
 	}
 
-	return 0;
+	exit(0);
 }
 

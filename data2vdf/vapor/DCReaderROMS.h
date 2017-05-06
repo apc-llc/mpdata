@@ -174,6 +174,7 @@ private:
  size_t _ovr_slice;
  int _ovr_fd;
  float _defaultMV;
+ size_t _dataReversed;
 
  class latLonBuf {
  public:
@@ -212,7 +213,7 @@ private:
 
  int _InitVerticalCoordinates(
 	NetCDFCFCollection *ncdfc, 
-	std::vector <string> &cvars, std::vector <double> &vertCoords
+	const std::vector <string> &cvars, std::vector <double> &vertCoords
  );
 
  void _InitDimensions(

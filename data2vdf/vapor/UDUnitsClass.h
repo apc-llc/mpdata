@@ -102,6 +102,14 @@ public:
    size_t n
  ) const;
 
+bool Convert(
+	const std::string from,
+	const std::string to,
+	const double *src,
+	double *dst,
+	size_t n
+) const;
+
  //! Decode time specified in seconds to year, month, day, hour, minute
  //! and second.
  //!

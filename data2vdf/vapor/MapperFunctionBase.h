@@ -61,15 +61,12 @@ public:
     //
     // Data Bounds
     //
-	float getMinColorMapValue() { return minColorMapBound; }
-	float getMaxColorMapValue() { return maxColorMapBound; }
-	float getMinOpacMapValue()  { return minOpacMapBound; }
-	float getMaxOpacMapValue()  { return maxOpacMapBound; }
+	
 
-	void setMinColorMapValue(float val) { minColorMapBound = val; }
-	void setMaxColorMapValue(float val) { maxColorMapBound = val; }
-	void setMinOpacMapValue(float val)  { minOpacMapBound = val; }
-	void setMaxOpacMapValue(float val)  { maxOpacMapBound = val; }
+	void setMinMapValue(float val) { minMapBound = val; }
+	void setMaxMapValue(float val) { maxMapBound = val; }
+	float getMinMapValue()  { return minMapBound; }
+	float getMaxMapValue()  { return maxMapBound; }
 
     //
     // Variables
@@ -137,8 +134,8 @@ public:
     {
 		
       int indx = mapPosition(point, 
-                             getMinColorMapValue(), 
-                             getMaxColorMapValue(), numEntries-1);
+                             getMinMapValue(), 
+                             getMaxMapValue(), numEntries-1);
       if (indx < 0) indx = 0;
       if (indx > numEntries-1) indx = numEntries-1;
       return indx;
@@ -146,17 +143,17 @@ public:
 
 	float mapColorIndexToFloat(int indx)
     {
-      return (float)(getMinColorMapValue() + 
-                     ((float)indx)*(float)(getMaxColorMapValue()-
-                                           getMinColorMapValue())/
+      return (float)(getMinMapValue() + 
+                     ((float)indx)*(float)(getMaxMapValue()-
+                                           getMinMapValue())/
                      (float)(numEntries-1));
 	}
 
 	int mapFloatToOpacIndex(float point) 
     {
       int indx = mapPosition(point, 
-                             getMinOpacMapValue(), 
-                             getMaxOpacMapValue(), numEntries-1);
+                             getMinMapValue(), 
+                             getMaxMapValue(), numEntries-1);
       if (indx < 0) indx = 0;
       if (indx > numEntries-1) indx = numEntries-1;
       return indx;
@@ -164,9 +161,9 @@ public:
 
 	float mapOpacIndexToFloat(int indx)
     {
-      return (float)(getMinOpacMapValue() + 
-                     ((float)indx)*(float)(getMaxOpacMapValue()-
-                                           getMinOpacMapValue())/
+      return (float)(getMinMapValue() + 
+                     ((float)indx)*(float)(getMaxMapValue()-
+                                           getMinMapValue())/
                      (float)(numEntries-1));
 	}
 	
@@ -240,8 +237,7 @@ protected:
     //
     // Mapping bounds
     //
-	float minColorMapBound, maxColorMapBound;
-	float minOpacMapBound, maxOpacMapBound;
+	float minMapBound, maxMapBound;
 
     //
     // Parent params
