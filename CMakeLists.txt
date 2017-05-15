@@ -48,6 +48,7 @@ add_library(core STATIC
 	core/src/ww.c)
 
 add_library(data2vdf STATIC
+	data2vdf/metadata.cpp
 	data2vdf/raw2vdf.cpp
 	data2vdf/vdfcreate.cpp)
 

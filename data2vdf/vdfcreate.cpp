@@ -59,37 +59,37 @@ extern "C" int vdfcreate(int argc, char **argv) {
 
 
 	if (op.AppendOptions(set_opts) < 0) {
-		exit(1);
+		return 1;
 	}
 
 	if (op.ParseOptions(&argc, argv, get_options) < 0) {
-		exit(1);
+		return 1;
 	}
 
 	VDCFactory	vdcf(opt.vdc2);
 	if (vdcf.Parse(&argc, argv) < 0) {
-		exit(1);
+		return 1;
 	}
 
 	if (opt.help) {
 		cerr << "Usage: " << ProgName << " [options] filename" << endl;
 		op.PrintOptionHelp(stderr, 80, false);
 		vdcf.Usage(stderr);
-		exit(0);
+		return 1;
 	}
 
 	if (argc != 2) {
 		cerr << "Usage: " << ProgName << " [options] filename" << endl;
 		op.PrintOptionHelp(stderr);
 		vdcf.Usage(stderr);
-		exit(1);
+		return 1;
 	}
 
 	MetadataVDC *file;
 
 	size_t dims[] = {opt.dim.nx, opt.dim.ny, opt.dim.nz};
 	file = vdcf.New(dims);
-	if (! file) exit(1);
+	if (! file) return 1;
 
 	if (file->GetVariableNames().size() == 0) {
 		vector <string> vars(1, "var1");
@@ -99,7 +99,8 @@ extern "C" int vdfcreate(int argc, char **argv) {
 
 
 	if (file->Write(argv[1]) < 0) {
-		exit(1);
+		return 1;
 	}
-	return(0);
+
+	return 0;
 }

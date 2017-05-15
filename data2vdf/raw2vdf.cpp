@@ -283,11 +283,11 @@ int read_next_slice(
 	}
 
 	memcpy(slice, fslice, dim[0]*dim[1]*sizeof(*slice));
-	return(0);
 
+	return 0;
 }
 
-void	process_volume(
+int	process_volume(
 	VDFIOBase *vdfio,
 	FILE *fp,
 	Metadata::VarType_T vtype,
@@ -333,7 +333,7 @@ void	process_volume(
 		MyBase::SetErrMsg(
 			"Failed to open variable \"%s\" for writing", opt.varname
 		);
-		exit(1);
+		return 1;
 	}
 
 	for (size_t z=0; z<dim3d[2]; z++) {
@@ -348,27 +348,29 @@ void	process_volume(
 		if (opt.eightBit) rc = read_next_slice( uc, vdfio, dim3d, fp, slice, read_timer);
 		else if (opt.dbl) rc = read_next_slice(db, vdfio, dim3d, fp, slice, read_timer);
 		else rc = read_next_slice(fl, vdfio, dim3d, fp, slice, read_timer);
-		if (rc<0) exit(1);
+		if (rc<0) return 1;
 
 		rc = vdfio->WriteSlice(slice);
 		if (rc<0) {
 			MyBase::SetErrMsg(
 				"Failed to write slice # %d of variable \"%s\"", z, opt.varname
 			);
-			exit(1);
+			return 1;
 		}
 	}
 
 	rc = vdfio->CloseVariable();
 	if (rc<0) {
 		MyBase::SetErrMsg("Error closing output file"); 
-		exit(1);
+		return 1;
 	}
 
 	*write_timer = vdfio->GetWriteTimer();
 	*xform_timer = vdfio->GetXFormTimer();
 
 	delete [] slice;
+	
+	return 0;
 }
 
 
@@ -450,7 +452,7 @@ float *read_region(
 		if (opt.eightBit) rc = read_next_slice(uc, vdfio, dim3d, fp, slice, read_timer);
 		else if (opt.dbl) rc = read_next_slice(db, vdfio, dim3d, fp, slice, read_timer);
 		else rc = read_next_slice(fl, vdfio, dim3d, fp, slice, read_timer);
-		if (rc<0) exit(1);
+		if (rc<0) return NULL;
 
 		slice += dim3d[0]*dim3d[1];
 	}
@@ -459,7 +461,7 @@ float *read_region(
 }
 
 
-void	process_region(
+int	process_region(
 	VDFIOBase *vdfio,
 	FILE	*fp, 
 	Metadata::VarType_T vtype,
@@ -474,7 +476,7 @@ void	process_region(
 		MyBase::SetErrMsg(
 			"Failed to open variable \"%s\" for writing", opt.varname
 		);
-		exit(1);
+		return 1;
 	}
 
 
@@ -482,13 +484,14 @@ void	process_region(
 	size_t min[3], max[3];
 
 	buf = read_region(vdfio, fp, vtype, min, max, read_timer);
+	if (!buf) return 1;
 
 	vdfio->WriteRegion((float *) buf, min, max);
 	if (vdfio->GetErrCode() != 0) {
 		MyBase::SetErrMsg(
 			"Failed to write region of variable \"%s\"", opt.varname
 		); 
-		exit(1);
+		return 1;
 	}
 
 	delete [] buf;
@@ -496,11 +499,13 @@ void	process_region(
 	rc = vdfio->CloseVariable();
 	if (rc<0) {
 		MyBase::SetErrMsg("Error closing output file"); 
-		exit(1);
+		return 1;
 	}
 
 	*write_timer = vdfio->GetWriteTimer();
 	*xform_timer = vdfio->GetXFormTimer();
+	
+	return 0;
 }
 
 
@@ -530,23 +535,23 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	ProgName = Basename(argv[0]);
 
 	if (op.AppendOptions(set_opts) < 0) {
-		exit(1);
+		return 1;
 	}
 
 	if (op.ParseOptions(&argc, argv, get_options) < 0) {
-		exit(1);
+		return 1;
 	}
 
 	if (opt.help) {
 		cerr << "Usage: " << ProgName << " [options] vdfFile rawFile" << endl;
 		op.PrintOptionHelp(stderr);
-		exit(0);
+		return 1;
 	}
 	
 	if (argc != 3) {
 		cerr << "Usage: " << ProgName << " [options] vdfFile rawFile" << endl;
 		op.PrintOptionHelp(stderr);
-		exit(1);
+		return 1;
 	}
 
 
@@ -554,6 +559,9 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	datafile = argv[2];	// Path to raw data file 
 
     if (opt.debug) MyBase::SetDiagMsgFilePtr(stderr);
+    
+    MyBase::EnableErrMsg(true);
+    MyBase::SetErrMsgFilePtr(stderr);
 
 	WaveletBlockIOBase	*wbwriter3D = NULL;
 	WaveCodecIO	*wcwriter = NULL;
@@ -567,12 +575,12 @@ extern "C" int raw2vdf(int argc, char **argv) {
 	MetadataVDC metadata (metafile);
 	if (MetadataVDC::GetErrCode() != 0) {
 		MyBase::SetErrMsg("Error processing metafile \"%s\"", metafile);
-		exit(1);
+		return 1;
 	}
 	Metadata::VarType_T vtype = metadata.GetVarType(opt.varname);
 	if (vtype == Metadata::VARUNKNOWN) {
 		MyBase::SetErrMsg("Unknown variable \"%s\"", opt.varname);
-		exit(1);
+		return 1;
 	}
 
 	
@@ -597,20 +605,20 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		vdfio = wcwriter;
 	}
 	if (vdfio->GetErrCode() != 0) {
-		exit(1);
+		return 1;
 	}
 
 	fp = FOPEN64(datafile, "rb");
 	if (! fp) {
 		MyBase::SetErrMsg("Could not open file \"%s\" : %M", datafile);
-		exit(1);
+		return 1;
 	}
 
 	if (opt.skip) {
 		int rc = fseek(fp, opt.skip, SEEK_SET);
 		if (rc<0) {	
 			MyBase::SetErrMsg("Could not seek file \"%s\" : %M", datafile);
-			exit(1);
+			return 1;
 		}
 	}
 
@@ -621,16 +629,18 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		max[0] == max[1]  && max[1] == max[2] && max[2] == (size_t) -1 &&
 		vtype == Metadata::VAR3D) {
 
-		process_volume(
+		int err = process_volume(
 			vdfio, fp, vtype, &read_timer,
 			&write_timer, &xform_timer
 		);
+		if (err) return err;
 	}
 	else {
-		process_region(
+		int err = process_region(
 			vdfio, fp, vtype, 
 			&read_timer, &write_timer, &xform_timer
 		);
+		if (err) return err;
 	}
 
 
@@ -646,6 +656,6 @@ extern "C" int raw2vdf(int argc, char **argv) {
 		fprintf(stdout, "min and max values of data output: %g, %g\n",range[0], range[1]);
 	}
 
-	exit(0);
+	return 0;
 }
 

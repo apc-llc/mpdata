@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <omp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h> // mkdir
 
@@ -283,7 +284,16 @@ void test_write_vapor_vdf(int n, int m,
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
-	raw2vdf(argc, argv);
+	{
+		int err = raw2vdf(argc, argv);
+		if (err)
+		{
+			fflush(stdout);
+			fflush(stderr);
+			fprintf(stderr, "Error in raw2vdf: code = %d\n", err);
+			exit(err);
+		}
+	}
 
 	// Write u variable.
 	fp = fopen("data.bin", "wb");
@@ -293,7 +303,16 @@ void test_write_vapor_vdf(int n, int m,
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
-	raw2vdf(argc, argv);
+	{
+		int err = raw2vdf(argc, argv);
+		if (err)
+		{
+			fflush(stdout);
+			fflush(stderr);
+			fprintf(stderr, "Error in raw2vdf: code = %d\n", err);
+			exit(err);
+		}
+	}
 
 	// Write u variable.
 	fp = fopen("data.bin", "wb");
@@ -303,7 +322,16 @@ void test_write_vapor_vdf(int n, int m,
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
-	raw2vdf(argc, argv);
+	{
+		int err = raw2vdf(argc, argv);
+		if (err)
+		{
+			fflush(stdout);
+			fflush(stderr);
+			fprintf(stderr, "Error in raw2vdf: code = %d\n", err);
+			exit(err);
+		}
+	}
 
 	// Write c variable.
 	fp = fopen("data.bin", "wb");
@@ -313,6 +341,15 @@ void test_write_vapor_vdf(int n, int m,
 
 	// Write to vdf file with UCAR Vapor raw2vdf.
 	memcpy(argv, margv, argc * sizeof(char*));
-	raw2vdf(argc, argv);
+	{
+		int err = raw2vdf(argc, argv);
+		if (err)
+		{
+			fflush(stdout);
+			fflush(stderr);
+			fprintf(stderr, "Error in raw2vdf: code = %d\n", err);
+			exit(err);
+		}
+	}
 }
 
