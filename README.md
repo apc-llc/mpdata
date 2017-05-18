@@ -48,7 +48,7 @@ $ ./ring2d 128 1024
 $ perl ring2d.pl
 ```
 
-Individual visualization frames will be save to `rind2d_frames` subfolder. They could we futher rendered into a movie:
+Individual visualization frames will be save to `ring2d_frames` subfolder. They could we futher rendered into a movie:
 
 ```
 $ sudo apt-add-repository ppa:mc3man/trusty-media
