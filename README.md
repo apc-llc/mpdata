@@ -45,7 +45,7 @@ The `ring2d` test shows aerosol transfer from the source point in the rounded fl
 
 ```
 $ ./ring2d 128 1024
-$ perl rind2d.pl
+$ perl ring2d.pl
 ```
 
 Individual visualization frames will be save to `rind2d_frames` subfolder. They could we futher rendered into a movie:
